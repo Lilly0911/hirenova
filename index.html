@@ -1,0 +1,1927 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>HireNova · AI 智能招聘系统</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body,#root{height:100%}
+body{background:#0a0c14;font-family:'PingFang SC','Microsoft YaHei',sans-serif;color:#e2e8f0;overflow:hidden}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:3px}
+input,select,textarea,button{font-family:inherit}
+a{color:#818cf8;text-decoration:none}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes dotBounce{0%,80%,100%{transform:scale(0.4);opacity:.3}40%{transform:scale(1);opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes barGrow{from{width:0}to{width:var(--w)}}
+@keyframes countUp{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.fadeIn{animation:fadeIn .22s ease both}
+.slideIn{animation:slideIn .2s ease both}
+.card{background:#13151f;border-radius:12px;border:1px solid rgba(255,255,255,0.06);transition:border-color .2s}
+.card:hover{border-color:rgba(255,255,255,0.1)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:none;cursor:pointer;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-primary{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600}
+.btn-primary:hover{opacity:.87;transform:translateY(-1px)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-ghost{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.09);color:#9ca3af;border-radius:7px;padding:7px 13px;font-size:12px}
+.btn-ghost:hover{background:rgba(255,255,255,0.08);color:#e2e8f0}
+.btn-danger{background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);color:#f87171;border-radius:7px;padding:7px 13px;font-size:12px}
+.btn-danger:hover{background:rgba(239,68,68,0.2)}
+.btn-success{background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);color:#34d399;border-radius:7px;padding:7px 13px;font-size:12px}
+.btn-success:hover{background:rgba(16,185,129,0.2)}
+.tag{padding:3px 9px;border-radius:20px;font-size:11px;display:inline-flex;align-items:center;gap:4px}
+.inp{width:100%;padding:9px 12px;border-radius:8px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.09);color:#e2e8f0;font-size:13px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:#6366f1}
+.inp::placeholder{color:#4b5563}
+select.inp{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.badge{padding:2px 8px;border-radius:12px;font-size:11px;font-weight:500}
+.progress-bar{height:5px;border-radius:3px;background:rgba(255,255,255,0.07);overflow:hidden}
+.progress-fill{height:100%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.skeleton{background:linear-gradient(90deg,rgba(255,255,255,.04) 25%,rgba(255,255,255,.08) 50%,rgba(255,255,255,.04) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
+.row{display:flex;align-items:center;gap:10px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.section-title{font-size:19px;font-weight:700;color:#f1f5f9;margin-bottom:4px}
+.section-sub{font-size:13px;color:#6b7280;margin-bottom:20px}
+.divider{border:none;border-top:1px solid rgba(255,255,255,0.06);margin:14px 0}
+.tooltip{position:relative}
+.ai-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;background:linear-gradient(135deg,rgba(99,102,241,.2),rgba(139,92,246,.2));border:1px solid rgba(99,102,241,.3);color:#a5b4fc;font-size:11px;font-weight:600}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useRef,useEffect,useCallback,useMemo}=React;
+
+/* ═══════════════════════════════════════════════════
+   DATA
+═══════════════════════════════════════════════════ */
+const CANDIDATES_DATA=[
+  {id:1,name:"张伟",gender:"男",age:28,education:"本科",school:"北京大学",major:"计算机科学",experience:5,position:"前端工程师",skills:["React","Vue","TypeScript","Webpack"],status:"待面试",score:92,phone:"138****1234",email:"zhangwei@email.com",appliedAt:"2026-03-20",salary:"25K-35K",city:"北京",avatar:"张",resumeText:"5年前端开发经验，精通React/Vue生态，主导过多个大型项目，具备良好的工程化思维。",aiComment:"技术栈契合度高，项目经验丰富，推荐优先面试。",tags:["潜力股","技术强"],interviewCount:0,offerSent:false},
+  {id:2,name:"李娜",gender:"女",age:26,education:"硕士",school:"清华大学",major:"软件工程",experience:3,position:"后端工程师",skills:["Java","Spring Boot","MySQL","Redis"],status:"已筛选",score:88,phone:"139****5678",email:"lina@email.com",appliedAt:"2026-03-19",salary:"20K-30K",city:"上海",avatar:"李",resumeText:"硕士研究生，熟悉微服务架构，有丰富的高并发系统设计经验。",aiComment:"学历背景优秀，技术能力扎实，建议尽快安排面试。",tags:["高学历","稳定"],interviewCount:1,offerSent:false},
+  {id:3,name:"王芳",gender:"女",age:30,education:"本科",school:"复旦大学",major:"人力资源",experience:7,position:"HR经理",skills:["招聘","绩效管理","劳动法","HRBP"],status:"待面试",score:85,phone:"137****9012",email:"wangfang@email.com",appliedAt:"2026-03-18",salary:"18K-25K",city:"上海",avatar:"王",resumeText:"7年HR从业经验，擅长高端人才招聘与团队建设，具备丰富的薪酬体系搭建经验。",aiComment:"经验丰富，管理能力强，适合带团队的HR管理岗。",tags:["管理经验","资深"],interviewCount:2,offerSent:false},
+  {id:4,name:"刘洋",gender:"男",age:32,education:"硕士",school:"上海交通大学",major:"数据科学",experience:8,position:"数据分析师",skills:["Python","SQL","Tableau","机器学习","R语言"],status:"已Offer",score:95,phone:"136****3456",email:"liuyang@email.com",appliedAt:"2026-03-15",salary:"30K-40K",city:"深圳",avatar:"刘",resumeText:"8年数据分析经验，精通机器学习算法，曾带领团队完成多个千万级数据项目。",aiComment:"综合评分最高，强烈推荐，已发放Offer。",tags:["顶级候选","强推"],interviewCount:3,offerSent:true},
+  {id:5,name:"陈静",gender:"女",age:25,education:"本科",school:"浙江大学",major:"市场营销",experience:2,position:"产品经理",skills:["产品规划","用户研究","Axure","数据分析"],status:"初筛",score:75,phone:"135****7890",email:"chenjing@email.com",appliedAt:"2026-03-22",salary:"15K-22K",city:"杭州",avatar:"陈",resumeText:"2年产品经验，思维活跃，有多个从0到1的产品案例，对用户体验有独特见解。",aiComment:"经验较浅但潜力不错，建议考察产品思维深度。",tags:["潜力股","应届"],interviewCount:0,offerSent:false},
+  {id:6,name:"赵磊",gender:"男",age:35,education:"博士",school:"中科院",major:"人工智能",experience:10,position:"算法工程师",skills:["深度学习","NLP","PyTorch","TensorFlow","CUDA"],status:"待面试",score:98,phone:"134****2345",email:"zhaolei@email.com",appliedAt:"2026-03-21",salary:"50K-80K",city:"北京",avatar:"赵",resumeText:"博士学历，10年AI研究经验，发表SCI论文20余篇，曾主导多个国家级AI项目。",aiComment:"业界顶尖人才，综合评分最高，务必优先争取。",tags:["顶尖人才","博士"],interviewCount:1,offerSent:false},
+  {id:7,name:"孙丽",gender:"女",age:27,education:"本科",school:"武汉大学",major:"视觉传达",experience:4,position:"UI/UX设计师",skills:["Figma","Photoshop","原型设计","用户体验","Sketch"],status:"初筛",score:82,phone:"133****6789",email:"sunli@email.com",appliedAt:"2026-03-20",salary:"18K-28K",city:"广州",avatar:"孙",resumeText:"4年UI/UX设计经验，服务过多家互联网公司，设计作品获多个行业奖项。",aiComment:"设计能力强，作品集质量高，建议安排作品集review。",tags:["设计奖项","创意"],interviewCount:0,offerSent:false},
+  {id:8,name:"周强",gender:"男",age:29,education:"本科",school:"同济大学",major:"软件工程",experience:6,position:"全栈工程师",skills:["Node.js","React","MongoDB","Docker","K8s"],status:"已筛选",score:89,phone:"132****0123",email:"zhouqiang@email.com",appliedAt:"2026-03-17",salary:"28K-38K",city:"北京",avatar:"周",resumeText:"6年全栈开发，熟悉云原生架构，具备良好的DevOps实践经验。",aiComment:"技术全面，工程化能力突出，适合快节奏团队。",tags:["全栈","工程化"],interviewCount:1,offerSent:false},
+  {id:9,name:"吴雪",gender:"女",age:24,education:"本科",school:"南京大学",major:"统计学",experience:1,position:"数据分析师",skills:["Excel","SPSS","Python基础","SQL"],status:"初筛",score:68,phone:"131****4567",email:"wuxue@email.com",appliedAt:"2026-03-23",salary:"10K-15K",city:"南京",avatar:"吴",resumeText:"统计学背景，有一定数据分析基础，学习能力强。",aiComment:"经验不足，但学历背景不错，适合培养型岗位。",tags:["应届","培养潜力"],interviewCount:0,offerSent:false},
+  {id:10,name:"郑博",gender:"男",age:31,education:"硕士",school:"哈尔滨工业大学",major:"嵌入式系统",experience:8,position:"嵌入式工程师",skills:["C/C++","RTOS","ARM","Linux内核","FPGA"],status:"待面试",score:91,phone:"130****8901",email:"zhengbo@email.com",appliedAt:"2026-03-16",salary:"25K-35K",city:"深圳",avatar:"郑",resumeText:"哈工大硕士，8年嵌入式开发经验，精通ARM/FPGA，有多个量产项目经验。",aiComment:"硬件方向专家级候选人，强烈推荐。",tags:["专家级","硬件"],interviewCount:2,offerSent:false},
+  {id:11,name:"徐梅",gender:"女",age:33,education:"本科",school:"厦门大学",major:"财务管理",experience:9,position:"财务总监",skills:["财务分析","预算管理","税务规划","ERP","IPO"],status:"已筛选",score:87,phone:"189****1122",email:"xumei@email.com",appliedAt:"2026-03-14",salary:"35K-50K",city:"厦门",avatar:"徐",resumeText:"9年财务管理经验，主导过两次企业IPO财务筹备，精通资本运作。",aiComment:"财务经验深厚，IPO背景是亮点，适合上市筹备阶段企业。",tags:["IPO经验","资深"],interviewCount:1,offerSent:false},
+  {id:12,name:"黄鑫",gender:"男",age:26,education:"本科",school:"电子科技大学",major:"通信工程",experience:3,position:"通信工程师",skills:["5G","射频","信号处理","NR协议"],status:"初筛",score:78,phone:"188****3344",email:"huangxin@email.com",appliedAt:"2026-03-22",salary:"15K-22K",city:"成都",avatar:"黄",resumeText:"通信专业背景，熟悉5G NR协议栈，有射频调试经验。",aiComment:"5G方向对口，经验尚浅，建议考察技术深度。",tags:["5G方向","成长期"],interviewCount:0,offerSent:false},
+  {id:13,name:"林晓燕",gender:"女",age:29,education:"硕士",school:"中山大学",major:"心理学",experience:5,position:"用户研究员",skills:["用户访谈","问卷设计","数据分析","A/B测试"],status:"初筛",score:80,phone:"177****2233",email:"linxiaoyan@email.com",appliedAt:"2026-03-21",salary:"18K-26K",city:"广州",avatar:"林",resumeText:"心理学硕士，5年用研经验，服务过多家头部互联网公司。",aiComment:"用研背景扎实，跨领域能力强，适合需要深度洞察的产品团队。",tags:["用研专家","跨界"],interviewCount:0,offerSent:false},
+  {id:14,name:"马超",gender:"男",age:34,education:"本科",school:"西安交通大学",major:"机械工程",experience:10,position:"技术总监",skills:["技术管理","架构设计","团队建设","敏捷开发"],status:"已筛选",score:93,phone:"166****4455",email:"machao@email.com",appliedAt:"2026-03-13",salary:"45K-65K",city:"西安",avatar:"马",resumeText:"10年技术管理经验，曾带领50人技术团队，主导过千万用户级平台架构。",aiComment:"管理经验丰富，技术视野开阔，是技术管理岗的优质候选。",tags:["技术管理","团队Leader"],interviewCount:2,offerSent:false},
+  {id:15,name:"何雨",gender:"女",age:22,education:"本科",school:"北京师范大学",major:"新闻传播",experience:0,position:"内容运营",skills:["文案撰写","新媒体","数据分析","短视频"],status:"初筛",score:65,phone:"155****6677",email:"heyv@email.com",appliedAt:"2026-03-23",salary:"8K-12K",city:"北京",avatar:"何",resumeText:"应届毕业生，在校期间运营过10万粉丝公众号，有丰富的内容创作经验。",aiComment:"应届生中的佼佼者，自媒体经验是加分项，适合内容方向。",tags:["应届","自媒体"],interviewCount:0,offerSent:false},
+];
+
+const JOBS_DATA=[
+  {id:1,title:"高级前端工程师",dept:"技术部",location:"北京",type:"全职",salaryMin:25,salaryMax:35,count:2,filled:0,status:"招聘中",skills:["React","TypeScript","性能优化"],desc:"负责核心产品前端架构设计与开发，3年以上经验，熟悉工程化体系。",priority:"高",publishDate:"2026-03-01",deadline:"2026-04-01",views:342,applies:28},
+  {id:2,title:"后端工程师（Java）",dept:"技术部",location:"上海",type:"全职",salaryMin:20,salaryMax:35,count:3,filled:1,status:"招聘中",skills:["Java","Spring Boot","分布式"],desc:"负责服务端业务开发，熟悉微服务架构，有高并发经验优先。",priority:"高",publishDate:"2026-03-05",deadline:"2026-04-05",views:289,applies:35},
+  {id:3,title:"AI算法工程师",dept:"AI实验室",location:"北京",type:"全职",salaryMin:40,salaryMax:80,count:1,filled:0,status:"招聘中",skills:["深度学习","NLP","PyTorch"],desc:"负责NLP/CV模型研发与落地，博士优先，要求有顶会论文或工业界经验。",priority:"紧急",publishDate:"2026-03-10",deadline:"2026-03-31",views:178,applies:12},
+  {id:4,title:"产品经理",dept:"产品部",location:"杭州",type:"全职",salaryMin:18,salaryMax:28,count:1,filled:0,status:"暂停",skills:["产品规划","数据分析","用户研究"],desc:"负责B端产品规划与迭代，有SaaS产品经验者优先。",priority:"中",publishDate:"2026-02-20",deadline:"2026-04-20",views:415,applies:52},
+  {id:5,title:"UI/UX设计师",dept:"设计部",location:"广州",type:"全职",salaryMin:15,salaryMax:25,count:1,filled:0,status:"招聘中",skills:["Figma","用户体验","交互设计"],desc:"负责产品界面设计，需提供作品集，有B端设计经验优先。",priority:"中",publishDate:"2026-03-08",deadline:"2026-04-08",views:267,applies:19},
+  {id:6,title:"技术总监",dept:"技术部",location:"北京",type:"全职",salaryMin:45,salaryMax:65,count:1,filled:0,status:"招聘中",skills:["技术管理","架构设计","团队建设"],desc:"负责全公司技术体系建设，要求10年以上经验，有50人以上团队管理经验。",priority:"紧急",publishDate:"2026-03-12",deadline:"2026-04-12",views:134,applies:8},
+  {id:7,title:"数据分析师",dept:"数据部",location:"深圳",type:"全职",salaryMin:20,salaryMax:35,count:2,filled:1,status:"招聘中",skills:["Python","SQL","数据可视化"],desc:"负责业务数据分析与挖掘，支持运营和产品决策。",priority:"中",publishDate:"2026-03-03",deadline:"2026-04-03",views:321,applies:41},
+];
+
+const INTERVIEWS_DATA=[
+  {id:1,candidateId:1,candidate:"张伟",position:"高级前端工程师",type:"技术面",date:"2026-03-25",time:"10:00",interviewer:"李总监",interviewerAvatar:"李",status:"待进行",room:"会议室A",notes:"",result:"",score:0},
+  {id:2,candidateId:3,candidate:"王芳",position:"后端工程师",type:"HR面",date:"2026-03-24",time:"14:00",interviewer:"张HR总监",interviewerAvatar:"张",status:"待进行",room:"会议室B",notes:"",result:"",score:0},
+  {id:3,candidateId:6,candidate:"赵磊",position:"AI算法工程师",type:"终面",date:"2026-03-26",time:"15:30",interviewer:"CEO 王总",interviewerAvatar:"王",status:"待进行",room:"总裁办公室",notes:"顶尖候选人，CEO亲自终面",result:"",score:0},
+  {id:4,candidateId:10,candidate:"郑博",position:"嵌入式工程师",type:"技术面",date:"2026-03-22",time:"11:00",interviewer:"陈技术主管",interviewerAvatar:"陈",status:"已完成",room:"会议室C",notes:"表现优秀，技术扎实",result:"通过",score:92},
+  {id:5,candidateId:14,candidate:"马超",position:"技术总监",type:"高管面",date:"2026-03-24",time:"16:00",interviewer:"COO 李总",interviewerAvatar:"李",status:"待进行",room:"高管会议室",notes:"CTO候选，重点考察管理理念",result:"",score:0},
+  {id:6,candidateId:8,candidate:"周强",position:"全栈工程师",type:"技术面",date:"2026-03-23",time:"09:30",interviewer:"孙架构师",interviewerAvatar:"孙",status:"已完成",room:"会议室D",notes:"",result:"通过",score:88},
+];
+
+const STATUS_CFG={
+  "初筛":{color:"#94a3b8",bg:"rgba(148,163,184,0.12)",text:"初筛"},
+  "已筛选":{color:"#60a5fa",bg:"rgba(96,165,250,0.12)",text:"已筛选"},
+  "待面试":{color:"#f59e0b",bg:"rgba(245,158,11,0.12)",text:"待面试"},
+  "面试中":{color:"#a78bfa",bg:"rgba(167,139,250,0.12)",text:"面试中"},
+  "已Offer":{color:"#10b981",bg:"rgba(16,185,129,0.12)",text:"已Offer"},
+  "已拒绝":{color:"#ef4444",bg:"rgba(239,68,68,0.12)",text:"已拒绝"},
+  "已入职":{color:"#06b6d4",bg:"rgba(6,182,212,0.12)",text:"已入职"},
+};
+
+const AV_COLORS=["#6366f1","#8b5cf6","#ec4899","#14b8a6","#f59e0b","#10b981","#3b82f6","#ef4444","#f97316","#84cc16"];
+const ac=n=>AV_COLORS[n.charCodeAt(0)%AV_COLORS.length];
+
+/* ── AI Engine (rule-based) ────────────────────────────────────────────────── */
+const AI={
+  score(c){
+    let s=50;
+    if(c.education==="博士")s+=20;else if(c.education==="硕士")s+=12;else if(c.education==="本科")s+=5;
+    s+=Math.min(c.experience*3,30);
+    const topSchools=["北京大学","清华大学","复旦大学","上海交通大学","中科院","哈尔滨工业大学","浙江大学","中山大学"];
+    if(topSchools.includes(c.school))s+=8;
+    s+=Math.min(c.skills.length*2,10);
+    return Math.min(99,Math.max(40,s+Math.floor(Math.random()*6-3)));
+  },
+  match(candidate,job){
+    let score=0;
+    job.skills.forEach(s=>{
+      if(candidate.skills.some(cs=>cs.toLowerCase().includes(s.toLowerCase())||s.toLowerCase().includes(cs.toLowerCase())))score+=20;
+    });
+    if(candidate.position.includes(job.title.replace("高级","").replace("（Java）","").replace("AI","").trim()))score+=30;
+    return Math.min(100,score);
+  },
+  recommend(candidates,job){
+    return [...candidates]
+      .map(c=>({...c,matchScore:AI.match(c,job)}))
+      .sort((a,b)=>b.matchScore-a.matchScore)
+      .slice(0,5);
+  },
+  autoFilter(candidates,criteria){
+    return candidates.filter(c=>{
+      if(criteria.education&&criteria.education!=="全部"&&c.education!==criteria.education)return false;
+      if(criteria.gender&&criteria.gender!=="全部"&&c.gender!==criteria.gender)return false;
+      if(criteria.minExp!=null&&c.experience<criteria.minExp)return false;
+      if(criteria.minScore!=null&&c.score<criteria.minScore)return false;
+      if(criteria.city&&criteria.city!=="全部"&&!c.city.includes(criteria.city))return false;
+      if(criteria.skill&&!c.skills.some(s=>s.toLowerCase().includes(criteria.skill.toLowerCase())))return false;
+      if(criteria.position&&!c.position.includes(criteria.position))return false;
+      return true;
+    });
+  },
+  generateReport(c){
+    const edu={博士:"顶级学历背景，学术能力突出",硕士:"研究生学历，理论基础扎实",本科:"本科学历，工程实践能力强"}[c.education]||"学历背景良好";
+    const exp=c.experience>=8?"资深专家级候选人，经验非常丰富":c.experience>=5?"中高级候选人，具备丰富项目经验":c.experience>=3?"中级候选人，有一定工作积累":c.experience>=1?"初级候选人，有基础工作经验":"应届/初入职场，可塑性强";
+    const scoreLevel=c.score>=90?"综合评分优秀，强烈推荐":c.score>=80?"综合评分良好，建议安排面试":c.score>=70?"综合评分中等，需进一步考察":"综合评分偏低，谨慎推进";
+    return`【AI综合分析报告】\n\n候选人：${c.name}｜${c.position}｜${c.education}·${c.school}\n\n📊 评分：${c.score}/100（${scoreLevel}）\n\n🎓 学历分析：${edu}，毕业于${c.school}${c.major}专业。\n\n💼 经验评估：${exp}，工作${c.experience}年，掌握${c.skills.join("、")}等技能。\n\n💰 薪资匹配：期望${c.salary}，与市场行情${c.score>=85?"高度匹配":"基本匹配"}。\n\n🏙️ 地域：位于${c.city}，${c.city==="北京"||c.city==="上海"?"无需异地搬迁":"可能需要考虑异地情况"}。\n\n✅ 综合建议：${c.aiComment}`;
+  },
+  chatReply(msg,candidates){
+    const m=msg.toLowerCase();
+    if(m.includes("多少")||m.includes("几个")||m.includes("数量")){
+      const total=candidates.length;
+      const byStatus={};
+      candidates.forEach(c=>{byStatus[c.status]=(byStatus[c.status]||0)+1;});
+      return`📊 当前共有 **${total}** 位候选人。\n\n状态分布：\n${Object.entries(byStatus).map(([k,v])=>`• ${k}：${v}人`).join("\n")}\n\n平均评分：**${(candidates.reduce((a,c)=>a+c.score,0)/candidates.length).toFixed(1)}** 分`;
+    }
+    if(m.includes("最高分")||m.includes("最好")||m.includes("top")){
+      const top=candidates.sort((a,b)=>b.score-a.score).slice(0,3);
+      return`🏆 评分最高的3位候选人：\n\n${top.map((c,i)=>`${i+1}. **${c.name}**（${c.score}分）- ${c.position}，${c.education}，${c.experience}年经验`).join("\n")}`;
+    }
+    if(m.includes("博士")){
+      const ds=candidates.filter(c=>c.education==="博士");
+      return`🎓 共有 **${ds.length}** 位博士学历候选人：\n${ds.map(c=>`• ${c.name}（${c.score}分）- ${c.position}`).join("\n")}`;
+    }
+    if(m.includes("硕士")){
+      const ms=candidates.filter(c=>c.education==="硕士");
+      return`🎓 共有 **${ms.length}** 位硕士学历候选人：\n${ms.map(c=>`• ${c.name}（${c.score}分）- ${c.position}`).join("\n")}`;
+    }
+    if(m.includes("待面试")){
+      const ws=candidates.filter(c=>c.status==="待面试");
+      return`📅 共有 **${ws.length}** 位候选人等待面试：\n${ws.map(c=>`• ${c.name} - ${c.position}`).join("\n")}`;
+    }
+    if(m.includes("北京")){
+      const bj=candidates.filter(c=>c.city==="北京");
+      return`🏙️ 北京共有 **${bj.length}** 位候选人：\n${bj.map(c=>`• ${c.name}（${c.score}分）- ${c.position}`).join("\n")}`;
+    }
+    if(m.includes("上海")){
+      const sh=candidates.filter(c=>c.city==="上海");
+      return`🏙️ 上海共有 **${sh.length}** 位候选人：\n${sh.map(c=>`• ${c.name}（${c.score}分）- ${c.position}`).join("\n")}`;
+    }
+    if(m.includes("女")||m.includes("女性")){
+      const fs=candidates.filter(c=>c.gender==="女");
+      return`👩 共有 **${fs.length}** 位女性候选人，平均评分 ${(fs.reduce((a,c)=>a+c.score,0)/fs.length).toFixed(1)} 分。\n${fs.map(c=>`• ${c.name}（${c.score}分）- ${c.position}`).join("\n")}`;
+    }
+    if(m.includes("男")||m.includes("男性")){
+      const ms2=candidates.filter(c=>c.gender==="男");
+      return`👨 共有 **${ms2.length}** 位男性候选人，平均评分 ${(ms2.reduce((a,c)=>a+c.score,0)/ms2.length).toFixed(1)} 分。`;
+    }
+    if(m.includes("分析")||m.includes("报告")||m.includes("总结")){
+      const avg=(candidates.reduce((a,c)=>a+c.score,0)/candidates.length).toFixed(1);
+      const top90=candidates.filter(c=>c.score>=90).length;
+      const offered=candidates.filter(c=>c.status==="已Offer").length;
+      return`📈 **当前招聘整体分析**\n\n• 候选人总数：**${candidates.length}人**\n• 平均评分：**${avg}分**\n• 高分候选人（≥90分）：**${top90}人**\n• 已发Offer：**${offered}人**\n• 录用率：**${(offered/candidates.length*100).toFixed(1)}%**\n\n💡 建议：优先跟进${candidates.filter(c=>c.score>=90&&c.status!=="已Offer").map(c=>c.name).join("、")}等高分候选人，加快推进面试流程。`;
+    }
+    if(m.includes("90")||m.includes("高分")){
+      const hs=candidates.filter(c=>c.score>=90);
+      return`⭐ 评分90分以上共 **${hs.length}** 位候选人：\n${hs.map(c=>`• ${c.name}（${c.score}分）- ${c.position}，当前${c.status}`).join("\n")}`;
+    }
+    if(m.includes("前端")){
+      const fe=candidates.filter(c=>c.position.includes("前端"));
+      return`💻 前端相关候选人共 **${fe.length}** 位：\n${fe.map(c=>`• ${c.name}（${c.score}分）- ${c.education}，${c.experience}年经验`).join("\n")}`;
+    }
+    if(m.includes("帮我筛选")||m.includes("筛选")||m.includes("过滤")){
+      return`⚡ 我来帮您分析筛选方向！\n\n请在左侧「智能筛选」模块设置具体条件，支持：\n• 按学历（本科/硕士/博士）\n• 按性别\n• 按经验年限\n• 按AI评分\n• 按城市\n• 按技能关键词\n\n或者直接告诉我具体要求，比如：「帮我找北京的硕士以上、5年以上经验的工程师」，我来给你列出结果。`;
+    }
+    if(m.includes("offer")||m.includes("录用")){
+      const off=candidates.filter(c=>c.status==="已Offer");
+      return`✅ 已发放Offer共 **${off.length}** 位：\n${off.map(c=>`• ${c.name} - ${c.position}（${c.score}分）`).join("\n")||"暂无"}`;
+    }
+    const greetings=["你好","您好","hi","hello","嗨"];
+    if(greetings.some(g=>m.includes(g))){
+      return`您好！👋 我是 HireNova AI 招聘助手。\n\n我可以帮您：\n• 📊 查询候选人数据和统计信息\n• 🔍 分析候选人情况\n• 💡 提供招聘建议\n• 📈 生成招聘报告\n\n试试问我：「当前有多少候选人？」或「分析一下整体招聘情况」`;
+    }
+    return`💬 我理解您在询问关于「${msg}」的问题。\n\n作为AI招聘助手，我可以帮您：\n• 查询候选人数量、状态分布\n• 分析高分候选人情况\n• 筛选特定条件候选人\n• 生成招聘数据报告\n\n请尝试更具体的问题，例如：\n「评分90分以上有几人？」\n「北京有哪些候选人？」\n「分析当前招聘整体情况」`;
+  }
+};
+
+/* ═══════════════════════════════════════════════════
+   SHARED UI COMPONENTS
+═══════════════════════════════════════════════════ */
+function Avatar({name,size=32,style={}}){
+  return <div style={{width:size,height:size,borderRadius:"50%",background:ac(name),display:"flex",alignItems:"center",justifyContent:"center",fontSize:size*0.38,color:"#fff",fontWeight:600,flexShrink:0,...style}}>{name[0]}</div>;
+}
+function StatusBadge({status}){
+  const cfg=STATUS_CFG[status]||{color:"#9ca3af",bg:"rgba(156,163,175,0.12)"};
+  return <span className="badge" style={{background:cfg.bg,color:cfg.color}}>{status}</span>;
+}
+function ScoreRing({score,size=48}){
+  const color=score>=90?"#10b981":score>=75?"#f59e0b":score>=60?"#60a5fa":"#6b7280";
+  return(
+    <div style={{width:size,height:size,borderRadius:"50%",border:`3px solid ${color}`,display:"flex",alignItems:"center",justifyContent:"center",background:`${color}12`,flexShrink:0}}>
+      <span style={{fontSize:size*0.28,fontWeight:700,color}}>{score}</span>
+    </div>
+  );
+}
+function ProgressBar({value,max=100,color="#6366f1",height=5}){
+  return(
+    <div style={{height,borderRadius:height/2,background:"rgba(255,255,255,0.07)",overflow:"hidden"}}>
+      <div style={{height:"100%",borderRadius:height/2,background:color,width:`${(value/max)*100}%`,transition:"width .5s ease"}}></div>
+    </div>
+  );
+}
+function StatCard({label,value,icon,color="#6366f1",sub}){
+  return(
+    <div className="card" style={{padding:18}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+        <div>
+          <div style={{fontSize:11,color:"#6b7280",marginBottom:8}}>{label}</div>
+          <div style={{fontSize:30,fontWeight:700,color:"#f1f5f9",lineHeight:1}}>{value}</div>
+          {sub&&<div style={{fontSize:11,color:"#10b981",marginTop:5}}>↑ {sub}</div>}
+        </div>
+        <div style={{width:42,height:42,borderRadius:10,background:`${color}1a`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:19}}>{icon}</div>
+      </div>
+    </div>
+  );
+}
+function SectionHead({title,sub,action}){
+  return(
+    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-end",marginBottom:20}}>
+      <div><div className="section-title">{title}</div>{sub&&<div className="section-sub">{sub}</div>}</div>
+      {action}
+    </div>
+  );
+}
+function Modal({open,onClose,title,children,width=520}){
+  if(!open)return null;
+  return(
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.65)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:20}} onClick={onClose}>
+      <div style={{background:"#1a1d2b",borderRadius:14,border:"1px solid rgba(255,255,255,0.09)",width:"100%",maxWidth:width,maxHeight:"85vh",overflow:"auto",animation:"fadeIn .2s ease"}} onClick={e=>e.stopPropagation()}>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"18px 22px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+          <span style={{fontSize:15,fontWeight:600,color:"#f1f5f9"}}>{title}</span>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"#6b7280",fontSize:20,cursor:"pointer",lineHeight:1}}>×</button>
+        </div>
+        <div style={{padding:"20px 22px"}}>{children}</div>
+      </div>
+    </div>
+  );
+}
+function Tag({label,color="#6366f1"}){
+  return <span className="tag" style={{background:`${color}18`,color,border:`1px solid ${color}30`}}>{label}</span>;
+}
+function Dot({color}){return <div style={{width:7,height:7,borderRadius:"50%",background:color,flexShrink:0}}></div>;}
+
+/* ═══════════════════════════════════════════════════
+   MAIN APP
+═══════════════════════════════════════════════════ */
+function App(){
+  const [page,setPage]=useState("dashboard");
+  const [candidates,setCandidates]=useState(()=>CANDIDATES_DATA.map(c=>({...c,score:AI.score(c)})));
+  const [interviews,setInterviews]=useState(INTERVIEWS_DATA);
+  const [notif,setNotif]=useState(null);
+  const [sidebarOpen]=useState(true);
+
+  const notify=useCallback((msg,type="success")=>{
+    setNotif({msg,type,id:Date.now()});
+    setTimeout(()=>setNotif(null),3500);
+  },[]);
+
+  const updateStatus=(id,status)=>{
+    setCandidates(p=>p.map(c=>c.id===id?{...c,status}:c));
+    notify(`状态已更新为「${status}」`);
+  };
+
+  const stats=useMemo(()=>({
+    total:candidates.length,
+    openJobs:JOBS_DATA.filter(j=>j.status==="招聘中").length,
+    pending:candidates.filter(c=>c.status==="待面试").length,
+    offered:candidates.filter(c=>c.status==="已Offer").length,
+    avgScore:Math.round(candidates.reduce((a,c)=>a+c.score,0)/candidates.length),
+    thisWeekNew:candidates.filter(c=>c.appliedAt>="2026-03-20").length,
+  }),[candidates]);
+
+  const NAV=[
+    {k:"dashboard",ic:"⊞",lb:"总览"},
+    {k:"candidates",ic:"👥",lb:"候选人"},
+    {k:"upload",ic:"📤",lb:"上传简历"},
+    {k:"analysis",ic:"🔬",lb:"简历解析"},
+    {k:"filter",ic:"⚡",lb:"智能筛选"},
+    {k:"jobs",ic:"💼",lb:"职位管理"},
+    {k:"assessment",ic:"📊",lb:"能力评估"},
+    {k:"interviews",ic:"📅",lb:"面试管理"},
+    {k:"pipeline",ic:"🔄",lb:"招聘漏斗"},
+    {k:"stats",ic:"📈",lb:"数据统计"},
+    {k:"ai",ic:"🤖",lb:"AI 助手"},
+    {k:"settings",ic:"⚙",lb:"系统设置"},
+  ];
+
+  const pages={dashboard:<Dashboard stats={stats} candidates={candidates} setPage={setPage}/>,
+    candidates:<CandidatesPage candidates={candidates} updateStatus={updateStatus} setCandidates={setCandidates} notify={notify}/>,
+    upload:<UploadPage candidates={candidates} setCandidates={setCandidates} notify={notify}/>,
+    analysis:<AnalysisPage candidates={candidates}/>,
+    filter:<FilterPage candidates={candidates} setCandidates={setCandidates} notify={notify}/>,
+    jobs:<JobsPage candidates={candidates} notify={notify}/>,
+    assessment:<AssessmentPage candidates={candidates}/>,
+    interviews:<InterviewsPage interviews={interviews} setInterviews={setInterviews} candidates={candidates} notify={notify}/>,
+    pipeline:<PipelinePage candidates={candidates}/>,
+    stats:<StatsPage candidates={candidates}/>,
+    ai:<AIPage candidates={candidates} setCandidates={setCandidates} notify={notify}/>,
+    settings:<SettingsPage notify={notify}/>,
+  };
+
+  return(
+    <div style={{display:"flex",height:"100vh",overflow:"hidden"}}>
+      {/* Sidebar */}
+      <aside style={{width:190,background:"#0d0f1a",borderRight:"1px solid rgba(255,255,255,0.05)",display:"flex",flexDirection:"column",flexShrink:0}}>
+        <div style={{padding:"18px 14px 14px",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:9}}>
+            <div style={{width:34,height:34,borderRadius:9,background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16}}>⚡</div>
+            <div><div style={{fontWeight:700,fontSize:15,color:"#f1f5f9",letterSpacing:-.3}}>HireNova</div><div style={{fontSize:10,color:"#4b5563"}}>AI 智能招聘</div></div>
+          </div>
+        </div>
+        <nav style={{padding:"8px 6px",flex:1,overflowY:"auto"}}>
+          <div style={{fontSize:9,color:"#374151",padding:"8px 6px 3px",textTransform:"uppercase",letterSpacing:1.2,fontWeight:600}}>主导航</div>
+          {NAV.slice(0,2).map(n=><NavBtn key={n.k} item={n} active={page===n.k} onClick={()=>setPage(n.k)} badge={n.k==="candidates"?stats.thisWeekNew:0}/>)}
+          <div style={{fontSize:9,color:"#374151",padding:"10px 6px 3px",textTransform:"uppercase",letterSpacing:1.2,fontWeight:600}}>招聘管理</div>
+          {NAV.slice(2,8).map(n=><NavBtn key={n.k} item={n} active={page===n.k} onClick={()=>setPage(n.k)}/>)}
+          <div style={{fontSize:9,color:"#374151",padding:"10px 6px 3px",textTransform:"uppercase",letterSpacing:1.2,fontWeight:600}}>分析 & AI</div>
+          {NAV.slice(8).map(n=><NavBtn key={n.k} item={n} active={page===n.k} onClick={()=>setPage(n.k)}/>)}
+        </nav>
+        <div style={{padding:"10px 12px",borderTop:"1px solid rgba(255,255,255,0.05)"}}>
+          <div style={{display:"flex",alignItems:"center",gap:6}}><Dot color="#10b981"/><span style={{fontSize:10,color:"#4b5563"}}>系统运行正常</span></div>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <div style={{flex:1,display:"flex",flexDirection:"column",overflow:"hidden",background:"#0a0c14"}}>
+        <header style={{height:52,background:"#0d0f1a",borderBottom:"1px solid rgba(255,255,255,0.05)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 22px",flexShrink:0}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:13,color:"#4b5563"}}>/</span>
+            <span style={{fontSize:13,fontWeight:600,color:"#e2e8f0"}}>{NAV.find(n=>n.k===page)?.lb}</span>
+          </div>
+          <div style={{display:"flex",alignItems:"center",gap:14}}>
+            <div className="ai-badge"><span>⚡</span>AI 引擎在线</div>
+            <div style={{fontSize:12,color:"#4b5563"}}>{new Date().toLocaleDateString("zh-CN",{month:"long",day:"numeric"})}</div>
+            <Avatar name="管" size={30} style={{cursor:"pointer"}}/>
+          </div>
+        </header>
+        <main style={{flex:1,overflow:"auto",padding:22}} key={page}>
+          <div className="fadeIn">{pages[page]||<div style={{color:"#6b7280",padding:40,textAlign:"center"}}>页面开发中...</div>}</div>
+        </main>
+      </div>
+
+      {/* Notification */}
+      {notif&&(
+        <div key={notif.id} style={{position:"fixed",top:18,right:18,padding:"11px 18px",borderRadius:10,background:notif.type==="success"?"rgba(16,185,129,0.95)":notif.type==="error"?"rgba(239,68,68,0.95)":"rgba(99,102,241,0.95)",color:"#fff",fontSize:13,fontWeight:500,zIndex:9999,boxShadow:"0 8px 30px rgba(0,0,0,0.4)",animation:"fadeIn .25s ease",display:"flex",alignItems:"center",gap:8,maxWidth:360}}>
+          <span>{notif.type==="success"?"✓":notif.type==="error"?"✗":"ℹ"}</span>{notif.msg}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NavBtn({item,active,onClick,badge}){
+  return(
+    <button onClick={onClick} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"8px 8px",borderRadius:7,border:"none",cursor:"pointer",fontSize:12,marginBottom:1,background:active?"rgba(99,102,241,0.18)":"transparent",color:active?"#a5b4fc":"#6b7280",fontWeight:active?600:400,transition:"all .13s",position:"relative"}}>
+      <span style={{fontSize:14,width:18,textAlign:"center"}}>{item.ic}</span>
+      {item.lb}
+      {badge>0&&<span style={{marginLeft:"auto",minWidth:18,height:16,borderRadius:8,background:"#ef4444",color:"#fff",fontSize:10,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 4px"}}>{badge}</span>}
+    </button>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════════════ */
+function Dashboard({stats,candidates,setPage}){
+  const top5=[...candidates].sort((a,b)=>b.score-a.score).slice(0,5);
+  const recentApplied=[...candidates].sort((a,b)=>b.appliedAt.localeCompare(a.appliedAt)).slice(0,6);
+  const funnelData=[
+    {label:"投递",count:candidates.length,color:"#6366f1"},
+    {label:"初筛",count:candidates.filter(c=>c.status!=="已拒绝").length,color:"#8b5cf6"},
+    {label:"已筛选",count:candidates.filter(c=>["已筛选","待面试","面试中","已Offer","已入职"].includes(c.status)).length,color:"#a78bfa"},
+    {label:"面试",count:candidates.filter(c=>["待面试","面试中","已Offer","已入职"].includes(c.status)).length,color:"#f59e0b"},
+    {label:"Offer",count:candidates.filter(c=>["已Offer","已入职"].includes(c.status)).length,color:"#10b981"},
+  ];
+
+  return(
+    <div>
+      {/* Hero */}
+      <div style={{background:"linear-gradient(135deg,#1a1040 0%,#0f1a2e 50%,#0a0c14 100%)",borderRadius:14,padding:"24px 28px",marginBottom:20,border:"1px solid rgba(99,102,241,0.18)",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",right:-40,top:-40,width:240,height:240,borderRadius:"50%",background:"radial-gradient(circle,rgba(99,102,241,0.1) 0%,transparent 70%)"}}></div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+          <div>
+            <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+              <div style={{width:40,height:40,borderRadius:11,background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>⚡</div>
+              <div><div style={{fontSize:20,fontWeight:700,color:"#f1f5f9"}}>HireNova</div><div style={{fontSize:11,color:"#818cf8"}}>AI 驱动的全流程智能招聘平台</div></div>
+            </div>
+            <p style={{color:"#94a3b8",fontSize:13,lineHeight:1.7,maxWidth:480}}>从简历解析、智能筛选、能力评估到面试管理，AI 全程辅助，让招聘提效 300%。</p>
+            <div style={{display:"flex",gap:10,marginTop:14}}>
+              <button className="btn btn-primary" style={{fontSize:12,padding:"7px 16px"}} onClick={()=>setPage("filter")}>⚡ 智能筛选</button>
+              <button className="btn btn-ghost" style={{fontSize:12}} onClick={()=>setPage("ai")}>🤖 AI 助手</button>
+              <button className="btn btn-ghost" style={{fontSize:12}} onClick={()=>setPage("upload")}>📤 上传简历</button>
+            </div>
+          </div>
+          <div style={{background:"rgba(255,255,255,0.04)",border:"1px solid rgba(99,102,241,0.25)",borderRadius:12,padding:"14px 20px",textAlign:"center",minWidth:160}}>
+            <div style={{fontSize:10,color:"#818cf8",marginBottom:8}}>⚡ AI 引擎状态</div>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4,justifyContent:"center"}}><Dot color="#10b981"/><span style={{color:"#10b981",fontSize:12,fontWeight:600}}>在线</span><span style={{color:"#4b5563",fontSize:11}}>12ms</span></div>
+            <div style={{color:"#a5b4fc",fontSize:20,fontWeight:700,marginBottom:2}}>98.6%</div>
+            <div style={{fontSize:10,color:"#6b7280"}}>AI 评估准确率</div>
+            <hr className="divider" style={{margin:"10px 0"}}/>
+            <div style={{fontSize:12,color:"#f1f5f9",fontWeight:600}}>{stats.total} 份简历</div>
+            <div style={{fontSize:10,color:"#6b7280"}}>已完成AI解析</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid4" style={{marginBottom:20}}>
+        <StatCard label="候选人总数" value={stats.total} icon="👥" color="#6366f1" sub={`本周新增${stats.thisWeekNew}人`}/>
+        <StatCard label="开放职位" value={stats.openJobs} icon="💼" color="#14b8a6" sub="较上月+1"/>
+        <StatCard label="待面试" value={stats.pending} icon="📅" color="#f59e0b" sub="本周安排4场"/>
+        <StatCard label="已发Offer" value={stats.offered} icon="✅" color="#10b981" sub={`录用率${(stats.offered/stats.total*100).toFixed(0)}%`}/>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 340px",gap:16,marginBottom:16}}>
+        {/* Recent */}
+        <div className="card" style={{padding:18}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <span style={{fontSize:14,fontWeight:600,color:"#f1f5f9"}}>最新投递</span>
+            <span onClick={()=>setPage("candidates")} style={{fontSize:11,color:"#6366f1",cursor:"pointer"}}>全部 →</span>
+          </div>
+          {recentApplied.map(c=>(
+            <div key={c.id} style={{display:"flex",alignItems:"center",gap:10,padding:"7px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <Avatar name={c.name} size={30}/>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:12,fontWeight:500,color:"#e2e8f0"}}>{c.name} <span style={{color:"#6b7280",fontWeight:400}}>· {c.position}</span></div>
+                <div style={{fontSize:11,color:"#4b5563"}}>{c.school} · {c.appliedAt}</div>
+              </div>
+              <StatusBadge status={c.status}/>
+              <span style={{fontSize:12,fontWeight:700,color:c.score>=90?"#10b981":c.score>=75?"#f59e0b":"#6b7280",minWidth:24,textAlign:"right"}}>{c.score}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Top Candidates */}
+        <div className="card" style={{padding:18}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <span style={{fontSize:14,fontWeight:600,color:"#f1f5f9"}}>🏆 AI 推荐候选人</span>
+            <div className="ai-badge" style={{fontSize:10}}>AI排名</div>
+          </div>
+          {top5.map((c,i)=>(
+            <div key={c.id} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <div style={{width:20,height:20,borderRadius:"50%",background:i<3?["linear-gradient(135deg,#f59e0b,#d97706)","linear-gradient(135deg,#94a3b8,#64748b)","linear-gradient(135deg,#cd7f32,#a0522d)"][i]:"rgba(255,255,255,0.07)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,color:"#fff",fontWeight:700,flexShrink:0}}>{i+1}</div>
+              <Avatar name={c.name} size={28}/>
+              <div style={{flex:1}}>
+                <div style={{fontSize:12,color:"#e2e8f0",fontWeight:500}}>{c.name}</div>
+                <div style={{fontSize:10,color:"#6b7280"}}>{c.position} · {c.education}</div>
+              </div>
+              <ScoreRing score={c.score} size={36}/>
+            </div>
+          ))}
+        </div>
+
+        {/* Funnel */}
+        <div className="card" style={{padding:18}}>
+          <div style={{fontSize:14,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>招聘漏斗</div>
+          {funnelData.map((f,i)=>(
+            <div key={i} style={{marginBottom:10}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}>
+                <span style={{color:"#94a3b8"}}>{f.label}</span>
+                <span style={{color:"#e2e8f0",fontWeight:600}}>{f.count}人</span>
+              </div>
+              <ProgressBar value={f.count} max={candidates.length} color={f.color}/>
+              <div style={{fontSize:10,color:"#4b5563",marginTop:2,textAlign:"right"}}>{(f.count/candidates.length*100).toFixed(0)}%</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid4">
+        {[
+          {ic:"📤",lb:"上传简历",desc:"拖拽批量上传",pg:"upload",color:"#6366f1"},
+          {ic:"⚡",lb:"智能筛选",desc:"AI多维度匹配",pg:"filter",color:"#8b5cf6"},
+          {ic:"📅",lb:"安排面试",desc:"智能排期管理",pg:"interviews",color:"#f59e0b"},
+          {ic:"🤖",lb:"AI 助手",desc:"自然语言查询",pg:"ai",color:"#10b981"},
+        ].map((q,i)=>(
+          <div key={i} className="card" onClick={()=>setPage(q.pg)} style={{padding:16,cursor:"pointer"}}>
+            <div style={{width:38,height:38,borderRadius:10,background:`${q.color}1a`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,marginBottom:10}}>{q.ic}</div>
+            <div style={{fontSize:13,fontWeight:600,color:"#e2e8f0",marginBottom:2}}>{q.lb}</div>
+            <div style={{fontSize:11,color:"#6b7280"}}>{q.desc}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   CANDIDATES PAGE
+═══════════════════════════════════════════════════ */
+function CandidatesPage({candidates,updateStatus,setCandidates,notify}){
+  const [search,setSearch]=useState("");
+  const [fStatus,setFStatus]=useState("全部");
+  const [fEdu,setFEdu]=useState("全部");
+  const [fGender,setFGender]=useState("全部");
+  const [fCity,setFCity]=useState("全部");
+  const [sort,setSort]=useState("score");
+  const [selected,setSelected]=useState(null);
+  const [detailTab,setDetailTab]=useState("info");
+  const [showAddModal,setShowAddModal]=useState(false);
+
+  const cities=[...new Set(candidates.map(c=>c.city))];
+
+  const filtered=useMemo(()=>candidates
+    .filter(c=>fStatus==="全部"||c.status===fStatus)
+    .filter(c=>fEdu==="全部"||c.education===fEdu)
+    .filter(c=>fGender==="全部"||c.gender===fGender)
+    .filter(c=>fCity==="全部"||c.city===fCity)
+    .filter(c=>!search||c.name.includes(search)||c.position.includes(search)||c.school.includes(search)||c.skills.some(s=>s.includes(search)))
+    .sort((a,b)=>{
+      if(sort==="score")return b.score-a.score;
+      if(sort==="date")return b.appliedAt.localeCompare(a.appliedAt);
+      if(sort==="name")return a.name.localeCompare(b.name);
+      return 0;
+    }),[candidates,fStatus,fEdu,fGender,fCity,search,sort]);
+
+  return(
+    <div style={{display:"grid",gridTemplateColumns:selected?"1fr 360px":"1fr",gap:18,height:"calc(100vh - 96px)"}}>
+      <div style={{overflow:"auto"}}>
+        <SectionHead title="候选人管理" sub={`共 ${filtered.length} 位候选人`}
+          action={<button className="btn btn-primary" style={{fontSize:12}} onClick={()=>setShowAddModal(true)}>+ 添加候选人</button>}/>
+
+        {/* Filters */}
+        <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap"}}>
+          <input className="inp" value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍  搜索姓名、职位、学校、技能..." style={{flex:1,minWidth:220}}/>
+          <select className="inp" value={fStatus} onChange={e=>setFStatus(e.target.value)} style={{width:110}}>
+            {["全部","初筛","已筛选","待面试","已Offer","已拒绝"].map(s=><option key={s}>{s}</option>)}
+          </select>
+          <select className="inp" value={fEdu} onChange={e=>setFEdu(e.target.value)} style={{width:100}}>
+            {["全部","本科","硕士","博士"].map(s=><option key={s}>{s}</option>)}
+          </select>
+          <select className="inp" value={fGender} onChange={e=>setFGender(e.target.value)} style={{width:80}}>
+            {["全部","男","女"].map(s=><option key={s}>{s}</option>)}
+          </select>
+          <select className="inp" value={fCity} onChange={e=>setFCity(e.target.value)} style={{width:95}}>
+            {["全部",...cities].map(s=><option key={s}>{s}</option>)}
+          </select>
+          <select className="inp" value={sort} onChange={e=>setSort(e.target.value)} style={{width:100}}>
+            <option value="score">按评分</option>
+            <option value="date">按时间</option>
+            <option value="name">按姓名</option>
+          </select>
+        </div>
+
+        {/* Table */}
+        <div className="card" style={{overflow:"hidden"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 70px 60px 90px 60px 100px 80px 110px",padding:"9px 16px",background:"rgba(255,255,255,0.02)",fontSize:11,color:"#6b7280",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+            <span>姓名 / 职位</span><span>学历</span><span>性别</span><span>院校</span><span>经验</span><span>状态</span><span style={{textAlign:"center"}}>评分</span><span>操作</span>
+          </div>
+          {filtered.length===0&&(
+            <div style={{padding:40,textAlign:"center",color:"#4b5563"}}>
+              <div style={{fontSize:32,marginBottom:8}}>🔍</div>
+              没有符合条件的候选人
+            </div>
+          )}
+          {filtered.map(c=>(
+            <div key={c.id} onClick={()=>setSelected(selected?.id===c.id?null:c)} style={{display:"grid",gridTemplateColumns:"1fr 70px 60px 90px 60px 100px 80px 110px",padding:"11px 16px",borderBottom:"1px solid rgba(255,255,255,0.03)",cursor:"pointer",background:selected?.id===c.id?"rgba(99,102,241,0.07)":"transparent",transition:"background .13s"}}>
+              <div style={{display:"flex",alignItems:"center",gap:9}}>
+                <Avatar name={c.name} size={32}/>
+                <div>
+                  <div style={{fontSize:13,color:"#f1f5f9",fontWeight:500}}>{c.name}</div>
+                  <div style={{fontSize:11,color:"#6b7280"}}>{c.position}</div>
+                </div>
+              </div>
+              <span style={{fontSize:12,color:"#9ca3af",alignSelf:"center"}}>{c.education}</span>
+              <span style={{fontSize:12,color:"#9ca3af",alignSelf:"center"}}>{c.gender}</span>
+              <span style={{fontSize:11,color:"#9ca3af",alignSelf:"center",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.school}</span>
+              <span style={{fontSize:12,color:"#9ca3af",alignSelf:"center"}}>{c.experience}年</span>
+              <div style={{alignSelf:"center"}}><StatusBadge status={c.status}/></div>
+              <div style={{alignSelf:"center",textAlign:"center"}}><ScoreRing score={c.score} size={34}/></div>
+              <div style={{alignSelf:"center",display:"flex",gap:5}} onClick={e=>e.stopPropagation()}>
+                <button className="btn btn-success" style={{fontSize:10,padding:"4px 8px"}} onClick={()=>updateStatus(c.id,"已筛选")}>通过</button>
+                <button className="btn btn-danger" style={{fontSize:10,padding:"4px 8px"}} onClick={()=>updateStatus(c.id,"已拒绝")}>拒绝</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Detail Panel */}
+      {selected&&(
+        <div className="card slideIn" style={{padding:0,overflow:"auto",height:"fit-content",maxHeight:"calc(100vh - 96px)",position:"sticky",top:0}}>
+          {/* Header */}
+          <div style={{padding:"16px 18px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+              <div style={{display:"flex",gap:12,alignItems:"flex-start"}}>
+                <Avatar name={selected.name} size={48}/>
+                <div>
+                  <div style={{fontSize:16,fontWeight:700,color:"#f1f5f9"}}>{selected.name}</div>
+                  <div style={{fontSize:12,color:"#6b7280",marginTop:2}}>{selected.position}</div>
+                  <div style={{display:"flex",gap:6,marginTop:6,flexWrap:"wrap"}}>
+                    <StatusBadge status={selected.status}/>
+                    {selected.tags?.map((t,i)=><Tag key={i} label={t} color={["#6366f1","#10b981","#f59e0b","#ec4899"][i%4]}/>)}
+                  </div>
+                </div>
+              </div>
+              <button onClick={()=>setSelected(null)} style={{background:"none",border:"none",color:"#6b7280",cursor:"pointer",fontSize:18,lineHeight:1}}>×</button>
+            </div>
+            <div style={{display:"flex",justifyContent:"space-around",marginTop:14,background:"rgba(255,255,255,0.03)",borderRadius:10,padding:"10px 0"}}>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:700,color:selected.score>=90?"#10b981":selected.score>=75?"#f59e0b":"#9ca3af"}}>{selected.score}</div>
+                <div style={{fontSize:10,color:"#6b7280"}}>AI评分</div>
+              </div>
+              <div style={{width:1,background:"rgba(255,255,255,0.06)"}}></div>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:700,color:"#e2e8f0"}}>{selected.experience}年</div>
+                <div style={{fontSize:10,color:"#6b7280"}}>工作经验</div>
+              </div>
+              <div style={{width:1,background:"rgba(255,255,255,0.06)"}}></div>
+              <div style={{textAlign:"center"}}>
+                <div style={{fontSize:22,fontWeight:700,color:"#e2e8f0"}}>{selected.interviewCount}</div>
+                <div style={{fontSize:10,color:"#6b7280"}}>面试次数</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabs */}
+          <div style={{display:"flex",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+            {[["info","基本信息"],["resume","简历详情"],["ai","AI分析"]].map(([k,lb])=>(
+              <button key={k} onClick={()=>setDetailTab(k)} style={{flex:1,padding:"10px 0",background:"none",border:"none",color:detailTab===k?"#a5b4fc":"#6b7280",fontSize:12,cursor:"pointer",borderBottom:detailTab===k?"2px solid #6366f1":"2px solid transparent",fontWeight:detailTab===k?600:400}}>
+                {lb}
+              </button>
+            ))}
+          </div>
+
+          <div style={{padding:"14px 18px"}}>
+            {detailTab==="info"&&(
+              <div>
+                {[["性别",selected.gender],["年龄",`${selected.age}岁`],["学历",selected.education],["院校",selected.school],["专业",selected.major],["经验",`${selected.experience}年`],["薪资",selected.salary],["城市",selected.city],["电话",selected.phone],["邮箱",selected.email],["申请",selected.appliedAt]].map(([l,v],i)=>(
+                  <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"6px 0",borderBottom:"1px solid rgba(255,255,255,0.04)",fontSize:12}}>
+                    <span style={{color:"#6b7280"}}>{l}</span>
+                    <span style={{color:"#e2e8f0",fontWeight:500,maxWidth:180,textAlign:"right",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v}</span>
+                  </div>
+                ))}
+                <div style={{marginTop:12}}>
+                  <div style={{fontSize:11,color:"#6b7280",marginBottom:6}}>技能标签</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                    {selected.skills.map((s,i)=><Tag key={i} label={s}/>)}
+                  </div>
+                </div>
+              </div>
+            )}
+            {detailTab==="resume"&&(
+              <div>
+                <div style={{background:"rgba(255,255,255,0.03)",borderRadius:8,padding:12,marginBottom:12,fontSize:12,color:"#94a3b8",lineHeight:1.8}}>
+                  {selected.resumeText}
+                </div>
+                <div style={{fontSize:11,color:"#6b7280",marginBottom:8}}>能力评估</div>
+                {[
+                  {label:"技术能力",val:Math.min(100,Math.round(selected.score*0.92))},
+                  {label:"工作经验",val:Math.min(100,selected.experience*11)},
+                  {label:"学历背景",val:selected.education==="博士"?97:selected.education==="硕士"?86:74},
+                  {label:"技能丰富度",val:Math.min(100,selected.skills.length*18)},
+                  {label:"综合潜力",val:Math.min(100,Math.round(selected.score*0.88))},
+                ].map((r,i)=>(
+                  <div key={i} style={{marginBottom:10}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:3}}>
+                      <span style={{color:"#9ca3af"}}>{r.label}</span>
+                      <span style={{color:"#e2e8f0",fontWeight:600}}>{r.val}</span>
+                    </div>
+                    <ProgressBar value={r.val} color={`hsl(${230+i*15},70%,65%)`}/>
+                  </div>
+                ))}
+              </div>
+            )}
+            {detailTab==="ai"&&(
+              <div>
+                <div className="ai-badge" style={{marginBottom:10,fontSize:11}}>⚡ AI 智能分析</div>
+                <div style={{background:"rgba(99,102,241,0.07)",border:"1px solid rgba(99,102,241,0.18)",borderRadius:9,padding:12,fontSize:12,color:"#c7d2fe",lineHeight:1.9,marginBottom:12,whiteSpace:"pre-line"}}>
+                  {AI.generateReport(selected)}
+                </div>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginTop:14}}>
+              <button className="btn btn-primary" style={{fontSize:12,padding:"9px"}} onClick={()=>{updateStatus(selected.id,"待面试");notify("已安排面试")}}>📅 安排面试</button>
+              <button className="btn btn-success" style={{fontSize:12,padding:"9px"}} onClick={()=>{updateStatus(selected.id,"已Offer");notify("Offer 已发送！")}}>✉️ 发Offer</button>
+              <button className="btn btn-ghost" style={{fontSize:12,padding:"8px"}} onClick={()=>updateStatus(selected.id,"已筛选")}>✓ 标记通过</button>
+              <button className="btn btn-danger" style={{fontSize:12,padding:"8px"}} onClick={()=>updateStatus(selected.id,"已拒绝")}>✗ 淘汰</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <AddCandidateModal open={showAddModal} onClose={()=>setShowAddModal(false)} onAdd={c=>{setCandidates(p=>[{...c,id:Date.now(),score:AI.score(c),appliedAt:new Date().toISOString().slice(0,10),interviewCount:0,offerSent:false},...p]);notify("候选人添加成功");setShowAddModal(false);}}/>
+    </div>
+  );
+}
+
+function AddCandidateModal({open,onClose,onAdd}){
+  const [form,setForm]=useState({name:"",gender:"男",age:"",education:"本科",school:"",major:"",experience:"",position:"",skills:"",salary:"",city:"北京",phone:"",email:"",status:"初筛",resumeText:"",aiComment:"",tags:[]});
+  const set=(k,v)=>setForm(p=>({...p,[k]:v}));
+  return(
+    <Modal open={open} onClose={onClose} title="添加候选人" width={560}>
+      <div className="grid2">
+        {[["姓名*","name","text",""],["年龄","age","number",""],["院校","school","text",""],["专业","major","text",""],["工作年限","experience","number",""],["应聘职位","position","text",""],["期望薪资","salary","text","如：20K-30K"],["所在城市","city","text",""],["联系电话","phone","text",""],["邮箱","email","email",""]].map(([lb,k,tp,ph])=>(
+          <div key={k}>
+            <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>{lb}</div>
+            <input className="inp" type={tp} value={form[k]} onChange={e=>set(k,e.target.value)} placeholder={ph} style={{fontSize:12}}/>
+          </div>
+        ))}
+        <div>
+          <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>性别</div>
+          <select className="inp" value={form.gender} onChange={e=>set("gender",e.target.value)} style={{fontSize:12}}><option>男</option><option>女</option></select>
+        </div>
+        <div>
+          <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>学历</div>
+          <select className="inp" value={form.education} onChange={e=>set("education",e.target.value)} style={{fontSize:12}}>{["本科","硕士","博士","专科"].map(e=><option key={e}>{e}</option>)}</select>
+        </div>
+      </div>
+      <div style={{marginTop:12}}>
+        <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>技能（逗号分隔）</div>
+        <input className="inp" value={form.skills} onChange={e=>set("skills",e.target.value)} placeholder="如：React, Python, SQL" style={{fontSize:12}}/>
+      </div>
+      <div style={{marginTop:12}}>
+        <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>简历摘要</div>
+        <textarea className="inp" value={form.resumeText} onChange={e=>set("resumeText",e.target.value)} rows={3} style={{fontSize:12,resize:"vertical"}} placeholder="候选人简历摘要..."/>
+      </div>
+      <div style={{display:"flex",gap:10,marginTop:18,justifyContent:"flex-end"}}>
+        <button className="btn btn-ghost" onClick={onClose}>取消</button>
+        <button className="btn btn-primary" onClick={()=>onAdd({...form,age:+form.age||25,experience:+form.experience||0,skills:form.skills?form.skills.split(",").map(s=>s.trim()).filter(Boolean):[],avatar:form.name[0]||"?"})} disabled={!form.name||!form.position}>
+          ⚡ AI评分并添加
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   UPLOAD PAGE
+═══════════════════════════════════════════════════ */
+function UploadPage({candidates,setCandidates,notify}){
+  const [dragging,setDragging]=useState(false);
+  const [queue,setQueue]=useState([]);
+  const [processing,setProcessing]=useState(false);
+  const [progress,setProgress]=useState(0);
+  const ref=useRef();
+
+  const addFiles=files=>{
+    const newFiles=Array.from(files).map(f=>({id:Date.now()+Math.random(),name:f.name,size:f.size,type:f.name.split(".").pop().toUpperCase(),status:"待解析",parsed:null}));
+    setQueue(p=>[...p,...newFiles]);
+  };
+
+  const processAll=async()=>{
+    if(!queue.length||processing)return;
+    setProcessing(true);setProgress(0);
+    const mockNames=["陈浩","李婷","张明","王静","刘强","赵雪","钱鑫","孙磊","周梅","吴超","郑丽","黄涛","林燕","徐峰","何倩"];
+    const mockSchools=["北京理工大学","华南理工大学","武汉大学","南开大学","东南大学","中国人民大学","华东师范大学","西北工业大学"];
+    const mockPositions=["前端工程师","后端工程师","全栈工程师","数据工程师","产品经理","UI设计师","测试工程师","运维工程师"];
+    const mockSkillSets=[["React","JavaScript","CSS"],["Java","Spring","MySQL"],["Python","Django","Redis"],["Vue","Node.js","MongoDB"],["Figma","Sketch","PS"],["SQL","Tableau","Excel"],["Go","K8s","Docker"],["iOS","Swift","Xcode"]];
+
+    for(let i=0;i<queue.length;i++){
+      await new Promise(r=>setTimeout(r,700+Math.random()*400));
+      const name=mockNames[(i+candidates.length)%mockNames.length];
+      const parsedCandidate={
+        id:Date.now()+i,
+        name,avatar:name[0],
+        gender:Math.random()>0.5?"男":"女",
+        age:22+Math.floor(Math.random()*12),
+        education:["本科","硕士","本科","本科","硕士"][Math.floor(Math.random()*5)],
+        school:mockSchools[Math.floor(Math.random()*mockSchools.length)],
+        major:"计算机相关",
+        experience:Math.floor(Math.random()*8),
+        position:mockPositions[Math.floor(Math.random()*mockPositions.length)],
+        skills:mockSkillSets[Math.floor(Math.random()*mockSkillSets.length)],
+        status:"初筛",
+        phone:`1${['3','5','7','8'][Math.floor(Math.random()*4)]}${Math.floor(Math.random()*1e9).toString().padStart(9,'0').slice(0,8).replace(/(\d{4})(\d{4})/,'****$2')}`,
+        email:`${name.toLowerCase().replace(/[^\w]/g,'')}@email.com`,
+        appliedAt:new Date().toISOString().slice(0,10),
+        salary:`${10+Math.floor(Math.random()*30)}K-${20+Math.floor(Math.random()*30)}K`,
+        city:["北京","上海","深圳","广州","杭州","成都"][Math.floor(Math.random()*6)],
+        resumeText:`${name}的简历，从${mockSchools[Math.floor(Math.random()*mockSchools.length)]}毕业。`,
+        aiComment:"通过AI自动解析导入的候选人。",
+        tags:["新导入"],
+        interviewCount:0,offerSent:false,
+        score:0,
+      };
+      parsedCandidate.score=AI.score(parsedCandidate);
+      setQueue(p=>p.map((f,j)=>j===i?{...f,status:"已解析",parsed:parsedCandidate}:f));
+      setProgress(Math.round((i+1)/queue.length*100));
+    }
+    const newCandidates=queue.map((f,i)=>f.parsed).filter(Boolean);
+    setCandidates(p=>[...newCandidates,...p]);
+    setProcessing(false);
+    notify(`✅ 成功解析 ${queue.length} 份简历，AI 评分完成！`);
+  };
+
+  return(
+    <div>
+      <SectionHead title="上传简历" sub="支持 PDF、Word、图片等格式，AI 自动解析并评分"/>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 300px",gap:18}}>
+        <div>
+          {/* Drop Zone */}
+          <div onDragOver={e=>{e.preventDefault();setDragging(true)}} onDragLeave={()=>setDragging(false)} onDrop={e=>{e.preventDefault();setDragging(false);addFiles(e.dataTransfer.files)}} onClick={()=>ref.current.click()} className="card"
+            style={{padding:"50px 20px",textAlign:"center",cursor:"pointer",borderStyle:"dashed",borderColor:dragging?"#6366f1":"rgba(255,255,255,0.1)",background:dragging?"rgba(99,102,241,0.06)":"#13151f",marginBottom:16,transition:"all .2s"}}>
+            <div style={{fontSize:44,marginBottom:12}}>📤</div>
+            <div style={{fontSize:16,fontWeight:600,color:"#f1f5f9",marginBottom:6}}>拖拽简历文件到此处</div>
+            <div style={{fontSize:13,color:"#6b7280",marginBottom:16}}>或点击选择文件，支持批量上传</div>
+            <div style={{display:"inline-flex",gap:8}}>
+              {["PDF","DOCX","JPG","PNG","TXT"].map(t=><span key={t} className="tag" style={{background:"rgba(99,102,241,0.12)",color:"#818cf8",border:"1px solid rgba(99,102,241,0.2)"}}>{t}</span>)}
+            </div>
+            <input ref={ref} type="file" multiple accept=".pdf,.docx,.doc,.jpg,.jpeg,.png,.txt" style={{display:"none"}} onChange={e=>addFiles(e.target.files)}/>
+          </div>
+
+          {/* Queue */}
+          {queue.length>0&&(
+            <div className="card" style={{overflow:"hidden"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 18px",borderBottom:"1px solid rgba(255,255,255,0.06)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:14,fontWeight:600,color:"#f1f5f9"}}>解析队列</span>
+                  <span className="badge" style={{background:"rgba(99,102,241,0.15)",color:"#818cf8"}}>{queue.length}份</span>
+                  {processing&&<span style={{fontSize:12,color:"#f59e0b"}}>AI解析中 {progress}%</span>}
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button className="btn btn-ghost" style={{fontSize:12}} onClick={()=>setQueue([])}>清空</button>
+                  <button className="btn btn-primary" style={{fontSize:12}} disabled={processing} onClick={processAll}>
+                    {processing?"⏳ 解析中...":"⚡ 开始AI解析"}
+                  </button>
+                </div>
+              </div>
+              {processing&&(
+                <div style={{padding:"10px 18px",background:"rgba(99,102,241,0.06)",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+                  <ProgressBar value={progress} color="#6366f1" height={6}/>
+                </div>
+              )}
+              {queue.map((f,i)=>(
+                <div key={f.id} style={{display:"flex",alignItems:"center",gap:12,padding:"11px 18px",borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
+                  <div style={{width:36,height:36,borderRadius:8,background:{PDF:"rgba(239,68,68,0.15)",DOCX:"rgba(59,130,246,0.15)",DOC:"rgba(59,130,246,0.15)",JPG:"rgba(16,185,129,0.15)",PNG:"rgba(16,185,129,0.15)"}[f.type]||"rgba(255,255,255,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,color:"#94a3b8",fontWeight:700}}>{f.type}</div>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,color:"#e2e8f0",fontWeight:500}}>{f.name}</div>
+                    <div style={{fontSize:11,color:"#6b7280"}}>{(f.size/1024).toFixed(1)} KB{f.parsed&&` · 解析为：${f.parsed.name}（${f.parsed.score}分）`}</div>
+                  </div>
+                  <span className="badge" style={{background:f.status==="已解析"?"rgba(16,185,129,0.12)":"rgba(245,158,11,0.12)",color:f.status==="已解析"?"#34d399":"#f59e0b"}}>{f.status}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Side info */}
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div className="card" style={{padding:18}}>
+            <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:12}}>AI 解析能力</div>
+            {[["👤","自动识别姓名、联系方式"],["🎓","学历院校专业提取"],["💼","工作经历智能解析"],["⚡","技能标签自动标注"],["📊","综合实力评分计算"],["🏷","候选人标签自动生成"]].map(([ic,tx],i)=>(
+              <div key={i} style={{display:"flex",gap:8,padding:"6px 0",borderBottom:"1px solid rgba(255,255,255,0.04)",fontSize:12,color:"#9ca3af"}}>
+                <span>{ic}</span><span>{tx}</span>
+              </div>
+            ))}
+          </div>
+          <div className="card" style={{padding:18}}>
+            <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:12}}>本月统计</div>
+            <div className="grid2" style={{gap:10}}>
+              {[["已上传","127","#6366f1"],["已解析","124","#10b981"],["导入失败","3","#ef4444"],["准确率","97.6%","#f59e0b"]].map(([l,v,c],i)=>(
+                <div key={i} style={{textAlign:"center",padding:10,background:"rgba(255,255,255,0.03)",borderRadius:8}}>
+                  <div style={{fontSize:18,fontWeight:700,color:c}}>{v}</div>
+                  <div style={{fontSize:10,color:"#6b7280"}}>{l}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   ANALYSIS PAGE
+═══════════════════════════════════════════════════ */
+function AnalysisPage({candidates}){
+  const [sel,setSel]=useState(candidates[0]);
+  const [loading,setLoading]=useState(false);
+  const [analysisReady,setAnalysisReady]=useState(true);
+
+  const radar=sel?[
+    {label:"技术能力",val:Math.min(99,Math.round(sel.score*0.92))},
+    {label:"工作经验",val:Math.min(99,sel.experience*11)},
+    {label:"学历背景",val:sel.education==="博士"?97:sel.education==="硕士"?86:74},
+    {label:"技能丰富度",val:Math.min(99,sel.skills.length*18)},
+    {label:"综合潜力",val:Math.min(99,Math.round(sel.score*0.88))},
+    {label:"市场竞争力",val:Math.min(99,sel.score-2)},
+  ]:[];
+
+  const runAnalysis=async()=>{
+    setLoading(true);setAnalysisReady(false);
+    await new Promise(r=>setTimeout(r,1400));
+    setLoading(false);setAnalysisReady(true);
+  };
+
+  return(
+    <div>
+      <SectionHead title="简历解析" sub="AI 深度解析候选人能力，生成结构化评估报告"/>
+      <div style={{display:"grid",gridTemplateColumns:"230px 1fr",gap:18}}>
+        {/* List */}
+        <div className="card" style={{overflow:"hidden"}}>
+          <div style={{padding:"12px 14px",fontSize:12,color:"#6b7280",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>选择候选人</div>
+          <div style={{maxHeight:"calc(100vh - 200px)",overflowY:"auto"}}>
+            {candidates.map(c=>(
+              <div key={c.id} onClick={()=>{setSel(c);setAnalysisReady(true)}} style={{display:"flex",gap:9,padding:"10px 14px",cursor:"pointer",background:sel?.id===c.id?"rgba(99,102,241,0.1)":"transparent",borderBottom:"1px solid rgba(255,255,255,0.03)",transition:"background .13s"}}>
+                <Avatar name={c.name} size={28}/>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontSize:12,color:"#f1f5f9",fontWeight:500}}>{c.name}</div>
+                  <div style={{fontSize:10,color:"#6b7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{c.position}</div>
+                </div>
+                <span style={{fontSize:11,fontWeight:700,color:c.score>=90?"#10b981":c.score>=75?"#f59e0b":"#6b7280"}}>{c.score}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {sel&&(
+          <div style={{display:"flex",flexDirection:"column",gap:14}}>
+            {/* Header */}
+            <div className="card" style={{padding:20}}>
+              <div style={{display:"flex",gap:16,alignItems:"flex-start",justifyContent:"space-between"}}>
+                <div style={{display:"flex",gap:14}}>
+                  <Avatar name={sel.name} size={56}/>
+                  <div>
+                    <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:5}}>
+                      <span style={{fontSize:20,fontWeight:700,color:"#f1f5f9"}}>{sel.name}</span>
+                      <StatusBadge status={sel.status}/>
+                    </div>
+                    <div style={{fontSize:13,color:"#818cf8",marginBottom:8}}>{sel.position} · {sel.education} · {sel.experience}年经验</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                      {sel.skills.map((s,i)=><Tag key={i} label={s}/>)}
+                    </div>
+                  </div>
+                </div>
+                <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                  <ScoreRing score={sel.score} size={54}/>
+                  <button className="btn btn-primary" style={{fontSize:12}} onClick={runAnalysis} disabled={loading}>
+                    {loading?"⏳ 分析中...":"🔬 重新分析"}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid2">
+              {/* Radar */}
+              <div className="card" style={{padding:18}}>
+                <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>能力雷达图</div>
+                {loading?radar.map((_,i)=><div key={i} className="skeleton" style={{height:24,marginBottom:10}}></div>):
+                radar.map((r,i)=>(
+                  <div key={i} style={{marginBottom:12}}>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:4}}>
+                      <span style={{color:"#9ca3af"}}>{r.label}</span>
+                      <span style={{color:"#e2e8f0",fontWeight:600}}>{r.val}</span>
+                    </div>
+                    <ProgressBar value={r.val} color={`hsl(${230+i*20},70%,62%)`} height={7}/>
+                  </div>
+                ))}
+              </div>
+
+              {/* Basic Info */}
+              <div className="card" style={{padding:18}}>
+                <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>基本信息</div>
+                {[["姓名",sel.name],["性别",sel.gender],["年龄",`${sel.age}岁`],["学历",sel.education],["院校",sel.school],["专业",sel.major],["工作年限",`${sel.experience}年`],["意向薪资",sel.salary],["所在城市",sel.city],["申请时间",sel.appliedAt]].map(([l,v],i)=>(
+                  <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid rgba(255,255,255,0.04)",fontSize:12}}>
+                    <span style={{color:"#6b7280"}}>{l}</span>
+                    <span style={{color:"#e2e8f0"}}>{v}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* AI Report */}
+            <div className="card" style={{padding:18}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+                <div className="ai-badge">⚡ AI 深度分析报告</div>
+                {!analysisReady&&<span style={{fontSize:11,color:"#6b7280"}}>分析中...</span>}
+              </div>
+              {loading?(
+                <div>{[80,100,90,70].map((w,i)=><div key={i} className="skeleton" style={{height:16,width:`${w}%`,marginBottom:8}}></div>)}</div>
+              ):(
+                <div style={{background:"rgba(99,102,241,0.07)",border:"1px solid rgba(99,102,241,0.15)",borderRadius:9,padding:14,fontSize:12,color:"#c7d2fe",lineHeight:1.9,whiteSpace:"pre-line"}}>
+                  {AI.generateReport(sel)}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   SMART FILTER PAGE
+═══════════════════════════════════════════════════ */
+function FilterPage({candidates,setCandidates,notify}){
+  const [cr,setCr]=useState({education:"全部",gender:"全部",minExp:0,maxExp:20,minScore:60,city:"全部",skill:"",position:""});
+  const [result,setResult]=useState(null);
+  const [filtering,setFiltering]=useState(false);
+  const [selectedJob,setSelectedJob]=useState(null);
+  const [autoMode,setAutoMode]=useState(false);
+
+  const cities=[...new Set(candidates.map(c=>c.city))];
+
+  const doFilter=async()=>{
+    setFiltering(true);
+    await new Promise(r=>setTimeout(r,900));
+    const criteria={...cr,minExp:cr.minExp,minScore:cr.minScore};
+    if(cr.education==="全部")delete criteria.education;
+    if(cr.gender==="全部")delete criteria.gender;
+    if(cr.city==="全部")delete criteria.city;
+    if(!cr.skill)delete criteria.skill;
+    if(!cr.position)delete criteria.position;
+    const res=AI.autoFilter(candidates,criteria);
+    setResult(res);setFiltering(false);
+    notify(`⚡ 筛选完成，共 ${res.length} 位候选人符合条件`);
+  };
+
+  const applyBatch=(newStatus)=>{
+    if(!result)return;
+    let count=0;
+    setCandidates(p=>p.map(c=>{
+      if(result.find(r=>r.id===c.id)&&c.status!=="已Offer"&&c.status!=="已入职"){count++;return{...c,status:newStatus};}
+      return c;
+    }));
+    notify(`✅ 已将 ${count} 位候选人状态更新为「${newStatus}」`);
+  };
+
+  const jobRecommend=()=>{
+    if(!selectedJob)return;
+    const recs=AI.recommend(candidates,selectedJob);
+    setResult(recs);
+    notify(`🎯 已为「${selectedJob.title}」推荐 ${recs.length} 位最匹配候选人`);
+  };
+
+  return(
+    <div>
+      <SectionHead title="智能筛选" sub="AI 多维度精准匹配，支持批量操作"/>
+      <div style={{display:"grid",gridTemplateColumns:"300px 1fr",gap:18}}>
+        {/* Left Panel */}
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          {/* Mode Toggle */}
+          <div className="card" style={{padding:14}}>
+            <div style={{fontSize:12,fontWeight:600,color:"#f1f5f9",marginBottom:10}}>筛选模式</div>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setAutoMode(false)} className="btn" style={{flex:1,fontSize:11,padding:"7px",background:!autoMode?"linear-gradient(135deg,#6366f1,#8b5cf6)":"rgba(255,255,255,0.04)",border:!autoMode?"none":"1px solid rgba(255,255,255,0.09)",color:!autoMode?"#fff":"#9ca3af",borderRadius:7}}>条件筛选</button>
+              <button onClick={()=>setAutoMode(true)} className="btn" style={{flex:1,fontSize:11,padding:"7px",background:autoMode?"linear-gradient(135deg,#6366f1,#8b5cf6)":"rgba(255,255,255,0.04)",border:autoMode?"none":"1px solid rgba(255,255,255,0.09)",color:autoMode?"#fff":"#9ca3af",borderRadius:7}}>职位匹配</button>
+            </div>
+          </div>
+
+          {!autoMode?(
+            <div className="card" style={{padding:16}}>
+              <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>筛选条件</div>
+              {[["学历要求",<select key="edu" className="inp" value={cr.education} onChange={e=>setCr(p=>({...p,education:e.target.value}))} style={{fontSize:12}}>{["全部","本科","硕士","博士"].map(v=><option key={v}>{v}</option>)}</select>],
+                ["性别要求",<select key="gender" className="inp" value={cr.gender} onChange={e=>setCr(p=>({...p,gender:e.target.value}))} style={{fontSize:12}}>{["全部","男","女"].map(v=><option key={v}>{v}</option>)}</select>],
+                ["目标城市",<select key="city" className="inp" value={cr.city} onChange={e=>setCr(p=>({...p,city:e.target.value}))} style={{fontSize:12}}>{["全部",...cities].map(v=><option key={v}>{v}</option>)}</select>],
+                ["技能关键词",<input key="skill" className="inp" value={cr.skill} onChange={e=>setCr(p=>({...p,skill:e.target.value}))} placeholder="如：React、Python..." style={{fontSize:12}}/>],
+                ["职位关键词",<input key="pos" className="inp" value={cr.position} onChange={e=>setCr(p=>({...p,position:e.target.value}))} placeholder="如：工程师、经理..." style={{fontSize:12}}/>],
+              ].map(([l,el],i)=>(
+                <div key={i} style={{marginBottom:12}}>
+                  <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>{l}</div>
+                  {el}
+                </div>
+              ))}
+              <div style={{marginBottom:12}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6b7280",marginBottom:4}}>
+                  <span>工作经验</span><span style={{color:"#a5b4fc"}}>{cr.minExp}~{cr.maxExp}年</span>
+                </div>
+                <input type="range" min="0" max="15" value={cr.minExp} onChange={e=>setCr(p=>({...p,minExp:+e.target.value}))} style={{width:"100%",marginBottom:4}}/>
+              </div>
+              <div style={{marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6b7280",marginBottom:4}}>
+                  <span>最低AI评分</span><span style={{color:"#a5b4fc"}}>{cr.minScore}分</span>
+                </div>
+                <input type="range" min="0" max="100" value={cr.minScore} onChange={e=>setCr(p=>({...p,minScore:+e.target.value}))}/>
+              </div>
+              <button className="btn btn-primary" style={{width:"100%"}} onClick={doFilter} disabled={filtering}>
+                {filtering?"⏳ AI 筛选中...":"⚡ 开始智能筛选"}
+              </button>
+            </div>
+          ):(
+            <div className="card" style={{padding:16}}>
+              <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:12}}>选择目标职位</div>
+              {JOBS_DATA.filter(j=>j.status==="招聘中").map(job=>(
+                <div key={job.id} onClick={()=>setSelectedJob(job)} style={{padding:"10px 12px",borderRadius:8,border:`1px solid ${selectedJob?.id===job.id?"#6366f1":"rgba(255,255,255,0.07)"}`,background:selectedJob?.id===job.id?"rgba(99,102,241,0.1)":"transparent",cursor:"pointer",marginBottom:8,transition:"all .15s"}}>
+                  <div style={{fontSize:13,color:"#f1f5f9",fontWeight:500}}>{job.title}</div>
+                  <div style={{fontSize:11,color:"#6b7280",marginTop:2}}>{job.dept} · {job.location}</div>
+                  <div style={{display:"flex",gap:5,marginTop:6,flexWrap:"wrap"}}>{job.skills.map((s,i)=><Tag key={i} label={s} color="#8b5cf6"/>)}</div>
+                </div>
+              ))}
+              <button className="btn btn-primary" style={{width:"100%",marginTop:4}} onClick={jobRecommend} disabled={!selectedJob}>
+                🎯 AI 智能推荐
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Results */}
+        <div>
+          {result?(
+            <div className="card" style={{overflow:"hidden"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"14px 18px",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:10}}>
+                  <span style={{fontSize:14,fontWeight:600,color:"#f1f5f9"}}>筛选结果</span>
+                  <span className="badge" style={{background:"rgba(99,102,241,0.15)",color:"#818cf8"}}>{result.length}人</span>
+                </div>
+                <div style={{display:"flex",gap:8}}>
+                  <button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>applyBatch("已筛选")}>批量→已筛选</button>
+                  <button className="btn btn-success" style={{fontSize:11}} onClick={()=>applyBatch("待面试")}>批量→待面试</button>
+                  <button className="btn btn-danger" style={{fontSize:11}} onClick={()=>applyBatch("已拒绝")}>批量淘汰</button>
+                </div>
+              </div>
+              {result.length===0?(
+                <div style={{padding:40,textAlign:"center",color:"#4b5563"}}><div style={{fontSize:32,marginBottom:8}}>🔍</div>无符合条件的候选人</div>
+              ):result.map(c=>(
+                <div key={c.id} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 18px",borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
+                  <Avatar name={c.name} size={38}/>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                      <span style={{fontSize:13,fontWeight:600,color:"#f1f5f9"}}>{c.name}</span>
+                      <span style={{fontSize:12,color:"#6b7280"}}>· {c.gender} · {c.education} · {c.experience}年 · {c.city}</span>
+                      {c.matchScore!=null&&<span className="badge" style={{background:"rgba(16,185,129,0.12)",color:"#34d399"}}>匹配度 {c.matchScore}%</span>}
+                    </div>
+                    <div style={{fontSize:11,color:"#6b7280"}}>{c.position} | {c.skills.slice(0,4).join(" · ")}</div>
+                  </div>
+                  <StatusBadge status={c.status}/>
+                  <ScoreRing score={c.score} size={38}/>
+                </div>
+              ))}
+            </div>
+          ):(
+            <div className="card" style={{padding:60,textAlign:"center"}}>
+              <div style={{fontSize:48,marginBottom:16}}>⚡</div>
+              <div style={{fontSize:16,color:"#6b7280",marginBottom:8}}>设置筛选条件后点击开始</div>
+              <div style={{fontSize:13,color:"#374151"}}>AI 将根据多维度条件精准匹配候选人</div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   JOBS PAGE
+═══════════════════════════════════════════════════ */
+function JobsPage({candidates,notify}){
+  const [view,setView]=useState("card");
+  const [showModal,setShowModal]=useState(false);
+  const PRIORITY_CFG={紧急:{color:"#ef4444",bg:"rgba(239,68,68,0.12)"},高:{color:"#f59e0b",bg:"rgba(245,158,11,0.12)"},中:{color:"#10b981",bg:"rgba(16,185,129,0.12)"}};
+
+  return(
+    <div>
+      <SectionHead title="职位管理" sub={`${JOBS_DATA.filter(j=>j.status==="招聘中").length}个招聘中，共${JOBS_DATA.length}个职位`}
+        action={<div style={{display:"flex",gap:8}}>
+          <button className="btn btn-ghost" style={{fontSize:12}} onClick={()=>setView(v=>v==="card"?"list":"card")}>{view==="card"?"≡ 列表":"⊞ 卡片"}</button>
+          <button className="btn btn-primary" style={{fontSize:12}} onClick={()=>setShowModal(true)}>+ 发布职位</button>
+        </div>}/>
+
+      {/* Summary */}
+      <div className="grid4" style={{marginBottom:18}}>
+        {[["总职位",JOBS_DATA.length,"#6366f1"],["招聘中",JOBS_DATA.filter(j=>j.status==="招聘中").length,"#10b981"],["总投递",JOBS_DATA.reduce((a,j)=>a+j.applies,0),"#f59e0b"],["总浏览",JOBS_DATA.reduce((a,j)=>a+j.views,0),"#8b5cf6"]].map(([l,v,c],i)=>(
+          <div key={i} className="card" style={{padding:14,textAlign:"center"}}>
+            <div style={{fontSize:22,fontWeight:700,color:c}}>{v}</div>
+            <div style={{fontSize:11,color:"#6b7280",marginTop:3}}>{l}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))",gap:14}}>
+        {JOBS_DATA.map(job=>{
+          const applies=job.applies;
+          const pCfg=PRIORITY_CFG[job.priority]||PRIORITY_CFG["中"];
+          return(
+            <div key={job.id} className="card" style={{padding:18}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}}>
+                <div style={{width:42,height:42,borderRadius:10,background:"rgba(99,102,241,0.15)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>💼</div>
+                <div style={{display:"flex",gap:6,flexDirection:"column",alignItems:"flex-end"}}>
+                  <span className="badge" style={{background:job.status==="招聘中"?"rgba(16,185,129,0.12)":"rgba(245,158,11,0.12)",color:job.status==="招聘中"?"#34d399":"#f59e0b"}}>{job.status}</span>
+                  <span className="badge" style={{background:pCfg.bg,color:pCfg.color}}>{job.priority}优先</span>
+                </div>
+              </div>
+              <div style={{fontSize:16,fontWeight:700,color:"#f1f5f9",marginBottom:3}}>{job.title}</div>
+              <div style={{fontSize:12,color:"#6b7280",marginBottom:6}}>{job.dept} · {job.location} · {job.type}</div>
+              <div style={{fontSize:14,color:"#818cf8",fontWeight:600,marginBottom:10}}>{job.salaryMin}K-{job.salaryMax}K</div>
+              <div style={{fontSize:12,color:"#9ca3af",lineHeight:1.6,marginBottom:12}}>{job.desc}</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:5,marginBottom:12}}>
+                {job.skills.map((s,i)=><Tag key={i} label={s}/>)}
+              </div>
+              <hr className="divider" style={{margin:"10px 0"}}/>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6,textAlign:"center"}}>
+                {[["招募",`${job.filled}/${job.count}`],["投递",applies],["浏览",job.views],["截止",job.deadline.slice(5)]].map(([l,v],i)=>(
+                  <div key={i}><div style={{fontSize:13,fontWeight:600,color:"#e2e8f0"}}>{v}</div><div style={{fontSize:10,color:"#6b7280"}}>{l}</div></div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        <div className="card" onClick={()=>setShowModal(true)} style={{padding:18,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",border:"2px dashed rgba(255,255,255,0.08)",minHeight:200,background:"transparent"}}>
+          <div style={{fontSize:28,marginBottom:8,opacity:.4}}>+</div>
+          <div style={{fontSize:13,color:"#4b5563"}}>发布新职位</div>
+        </div>
+      </div>
+
+      <Modal open={showModal} onClose={()=>setShowModal(false)} title="发布新职位">
+        <div style={{color:"#6b7280",fontSize:13,textAlign:"center",padding:20}}>职位发布表单（功能完整版即将推出）</div>
+        <div style={{display:"flex",justifyContent:"flex-end",marginTop:10}}>
+          <button className="btn btn-ghost" onClick={()=>setShowModal(false)}>关闭</button>
+        </div>
+      </Modal>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   ASSESSMENT PAGE
+═══════════════════════════════════════════════════ */
+function AssessmentPage({candidates}){
+  const [sortBy,setSortBy]=useState("score");
+  const [filterEdu,setFilterEdu]=useState("全部");
+  const sorted=[...candidates]
+    .filter(c=>filterEdu==="全部"||c.education===filterEdu)
+    .sort((a,b)=>sortBy==="score"?b.score-a.score:b.experience-a.experience);
+
+  const avgScore=Math.round(candidates.reduce((a,c)=>a+c.score,0)/candidates.length);
+  const top90=candidates.filter(c=>c.score>=90).length;
+
+  return(
+    <div>
+      <SectionHead title="能力评估" sub="AI 综合评分系统，多维度评估候选人能力"/>
+      <div className="grid4" style={{marginBottom:18}}>
+        {[["平均评分",avgScore,"#6366f1"],["优秀（≥90）",top90,"#10b981"],["良好（75-89）",candidates.filter(c=>c.score>=75&&c.score<90).length,"#f59e0b"],["待考察（<75）",candidates.filter(c=>c.score<75).length,"#ef4444"]].map(([l,v,c],i)=>(
+          <div key={i} className="card" style={{padding:16,textAlign:"center"}}><div style={{fontSize:26,fontWeight:700,color:c}}>{v}</div><div style={{fontSize:11,color:"#6b7280",marginTop:4}}>{l}</div></div>
+        ))}
+      </div>
+      <div style={{display:"flex",gap:10,marginBottom:14}}>
+        <select className="inp" value={sortBy} onChange={e=>setSortBy(e.target.value)} style={{width:120}}>
+          <option value="score">按评分排序</option>
+          <option value="exp">按经验排序</option>
+        </select>
+        <select className="inp" value={filterEdu} onChange={e=>setFilterEdu(e.target.value)} style={{width:100}}>
+          {["全部","本科","硕士","博士"].map(v=><option key={v}>{v}</option>)}
+        </select>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:14}}>
+        {sorted.map((c,rank)=>{
+          const dims=[
+            {l:"技术能力",v:Math.min(99,Math.round(c.score*0.92))},
+            {l:"工作经验",v:Math.min(99,c.experience*11)},
+            {l:"学历背景",v:c.education==="博士"?97:c.education==="硕士"?86:74},
+            {l:"综合潜力",v:Math.min(99,Math.round(c.score*0.88))},
+          ];
+          return(
+            <div key={c.id} className="card" style={{padding:18}}>
+              <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                <div style={{width:24,height:24,borderRadius:"50%",background:rank<3?"linear-gradient(135deg,#f59e0b,#d97706)":"rgba(255,255,255,0.07)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff",flexShrink:0}}>{rank+1}</div>
+                <Avatar name={c.name} size={38}/>
+                <div style={{flex:1}}>
+                  <div style={{fontSize:14,fontWeight:600,color:"#f1f5f9"}}>{c.name}</div>
+                  <div style={{fontSize:11,color:"#6b7280"}}>{c.position}</div>
+                </div>
+                <ScoreRing score={c.score} size={40}/>
+              </div>
+              {dims.map((d,i)=>(
+                <div key={i} style={{marginBottom:8}}>
+                  <div style={{display:"flex",justifyContent:"space-between",fontSize:11,marginBottom:3}}>
+                    <span style={{color:"#9ca3af"}}>{d.l}</span>
+                    <span style={{color:"#e2e8f0",fontWeight:600}}>{d.v}</span>
+                  </div>
+                  <ProgressBar value={d.v} color={["#6366f1","#8b5cf6","#a78bfa","#10b981"][i]} height={5}/>
+                </div>
+              ))}
+              <div style={{marginTop:10,display:"flex",flexWrap:"wrap",gap:4}}>
+                {c.skills.slice(0,4).map((s,i)=><Tag key={i} label={s} color={["#6366f1","#8b5cf6","#14b8a6","#f59e0b"][i%4]}/>)}
+              </div>
+              <div style={{marginTop:10,fontSize:11,color:"#6b7280",background:"rgba(255,255,255,0.03)",borderRadius:6,padding:"6px 8px"}}>{c.aiComment}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   INTERVIEWS PAGE
+═══════════════════════════════════════════════════ */
+function InterviewsPage({interviews,setInterviews,candidates,notify}){
+  const [showModal,setShowModal]=useState(false);
+  const [editModal,setEditModal]=useState(null);
+  const [newIv,setNewIv]=useState({candidateId:"",type:"技术面",date:"",time:"",interviewer:"",room:""});
+  const days=["2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27"];
+  const dayNames=["周一","周二","周三","周四","周五"];
+  const today="2026-03-23";
+
+  const scheduleIv=()=>{
+    const c=candidates.find(x=>x.id===+newIv.candidateId);
+    if(!c||!newIv.date||!newIv.time||!newIv.interviewer)return;
+    const iv={...newIv,id:Date.now(),candidate:c.name,position:c.position,status:"待进行",notes:"",result:"",score:0,interviewerAvatar:newIv.interviewer[0]};
+    setInterviews(p=>[...p,iv]);
+    notify(`✅ 面试已安排：${c.name} · ${newIv.date} ${newIv.time}`);
+    setShowModal(false);
+    setNewIv({candidateId:"",type:"技术面",date:"",time:"",interviewer:"",room:""});
+  };
+
+  const completeIv=(id,result,score)=>{
+    setInterviews(p=>p.map(iv=>iv.id===id?{...iv,status:"已完成",result,score}:iv));
+    notify(`面试结果已记录：${result}`);
+    setEditModal(null);
+  };
+
+  const TYPE_COLORS={"技术面":"#6366f1","HR面":"#10b981","终面":"#ef4444","高管面":"#f59e0b","作品评审":"#8b5cf6"};
+
+  return(
+    <div>
+      <SectionHead title="面试管理" sub="智能排期，全流程面试跟踪"
+        action={<button className="btn btn-primary" style={{fontSize:12}} onClick={()=>setShowModal(true)}>+ 安排面试</button>}/>
+
+      {/* Calendar */}
+      <div className="card" style={{padding:18,marginBottom:16}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:12}}>本周面试日历</div>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:10}}>
+          {days.map((day,di)=>{
+            const dayIvs=interviews.filter(iv=>iv.date===day);
+            const isToday=day===today;
+            return(
+              <div key={day} style={{background:isToday?"rgba(99,102,241,0.1)":"rgba(255,255,255,0.02)",borderRadius:10,padding:12,border:isToday?"1px solid rgba(99,102,241,0.3)":"1px solid rgba(255,255,255,0.04)"}}>
+                <div style={{textAlign:"center",marginBottom:8}}>
+                  <div style={{fontSize:20,fontWeight:700,color:isToday?"#a5b4fc":"#e2e8f0"}}>{day.slice(8)}</div>
+                  <div style={{fontSize:10,color:isToday?"#818cf8":"#6b7280"}}>{dayNames[di]}{isToday?" (今天)":""}</div>
+                </div>
+                {dayIvs.length===0&&<div style={{fontSize:10,color:"#374151",textAlign:"center"}}>无安排</div>}
+                {dayIvs.map(iv=>(
+                  <div key={iv.id} onClick={()=>setEditModal(iv)} style={{background:(TYPE_COLORS[iv.type]||"#6366f1")+"20",borderRadius:6,padding:"5px 7px",marginBottom:5,cursor:"pointer",border:`1px solid ${(TYPE_COLORS[iv.type]||"#6366f1")}30`}}>
+                    <div style={{fontSize:10,fontWeight:600,color:TYPE_COLORS[iv.type]||"#818cf8"}}>{iv.time}</div>
+                    <div style={{fontSize:11,color:"#e2e8f0"}}>{iv.candidate}</div>
+                    <div style={{fontSize:10,color:"#6b7280"}}>{iv.type}</div>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="card" style={{overflow:"hidden"}}>
+        <div style={{padding:"12px 18px",fontSize:13,fontWeight:600,color:"#f1f5f9",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>全部面试记录</div>
+        {interviews.map(iv=>(
+          <div key={iv.id} style={{display:"flex",gap:14,padding:"13px 18px",borderBottom:"1px solid rgba(255,255,255,0.03)",cursor:"pointer"}} onClick={()=>setEditModal(iv)}>
+            <div style={{width:50,height:50,borderRadius:10,background:"rgba(99,102,241,0.1)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+              <div style={{fontSize:16,fontWeight:700,color:"#818cf8"}}>{iv.date.slice(8)}</div>
+              <div style={{fontSize:9,color:"#6b7280"}}>{iv.time}</div>
+            </div>
+            <div style={{flex:1}}>
+              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                <span style={{fontSize:14,fontWeight:600,color:"#f1f5f9"}}>{iv.candidate}</span>
+                <span className="badge" style={{background:(TYPE_COLORS[iv.type]||"#6366f1")+"18",color:TYPE_COLORS[iv.type]||"#818cf8"}}>{iv.type}</span>
+                <span className="badge" style={{background:iv.status==="已完成"?"rgba(16,185,129,0.12)":"rgba(245,158,11,0.12)",color:iv.status==="已完成"?"#34d399":"#f59e0b"}}>{iv.status}</span>
+                {iv.result&&<span className="badge" style={{background:"rgba(99,102,241,0.12)",color:"#a5b4fc"}}>{iv.result}</span>}
+              </div>
+              <div style={{fontSize:12,color:"#6b7280"}}>{iv.position} · 面试官: {iv.interviewer} · {iv.room}</div>
+              {iv.notes&&<div style={{fontSize:11,color:"#4b5563",marginTop:4}}>备注: {iv.notes}</div>}
+            </div>
+            {iv.score>0&&<ScoreRing score={iv.score} size={36}/>}
+          </div>
+        ))}
+      </div>
+
+      {/* Schedule Modal */}
+      <Modal open={showModal} onClose={()=>setShowModal(false)} title="安排面试">
+        <div style={{display:"flex",flexDirection:"column",gap:12}}>
+          <div>
+            <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>候选人</div>
+            <select className="inp" value={newIv.candidateId} onChange={e=>setNewIv(p=>({...p,candidateId:e.target.value}))}>
+              <option value="">请选择...</option>
+              {candidates.filter(c=>["已筛选","初筛"].includes(c.status)).map(c=><option key={c.id} value={c.id}>{c.name} - {c.position}</option>)}
+            </select>
+          </div>
+          <div className="grid2">
+            <div>
+              <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>面试类型</div>
+              <select className="inp" value={newIv.type} onChange={e=>setNewIv(p=>({...p,type:e.target.value}))}>
+                {["技术面","HR面","终面","高管面","作品评审"].map(t=><option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>面试日期</div>
+              <input className="inp" type="date" value={newIv.date} onChange={e=>setNewIv(p=>({...p,date:e.target.value}))}/>
+            </div>
+            <div>
+              <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>面试时间</div>
+              <input className="inp" type="time" value={newIv.time} onChange={e=>setNewIv(p=>({...p,time:e.target.value}))}/>
+            </div>
+            <div>
+              <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>面试官</div>
+              <input className="inp" value={newIv.interviewer} onChange={e=>setNewIv(p=>({...p,interviewer:e.target.value}))} placeholder="面试官姓名"/>
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>面试地点</div>
+            <input className="inp" value={newIv.room} onChange={e=>setNewIv(p=>({...p,room:e.target.value}))} placeholder="如：会议室A、视频面试"/>
+          </div>
+        </div>
+        <div style={{display:"flex",gap:10,marginTop:18,justifyContent:"flex-end"}}>
+          <button className="btn btn-ghost" onClick={()=>setShowModal(false)}>取消</button>
+          <button className="btn btn-primary" onClick={scheduleIv} disabled={!newIv.candidateId||!newIv.date||!newIv.interviewer}>确认安排</button>
+        </div>
+      </Modal>
+
+      {/* Edit Modal */}
+      {editModal&&(
+        <Modal open={!!editModal} onClose={()=>setEditModal(null)} title={`面试详情：${editModal.candidate}`}>
+          <div style={{display:"flex",flexDirection:"column",gap:10}}>
+            {[["候选人",editModal.candidate],["职位",editModal.position],["类型",editModal.type],["时间",`${editModal.date} ${editModal.time}`],["面试官",editModal.interviewer],["地点",editModal.room],["状态",editModal.status]].map(([l,v],i)=>(
+              <div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:13,padding:"7px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                <span style={{color:"#6b7280"}}>{l}</span><span style={{color:"#f1f5f9"}}>{v}</span>
+              </div>
+            ))}
+          </div>
+          {editModal.status==="待进行"&&(
+            <div style={{marginTop:18}}>
+              <div style={{fontSize:12,color:"#6b7280",marginBottom:10}}>记录面试结果</div>
+              <div style={{display:"flex",gap:8}}>
+                <button className="btn btn-success" style={{flex:1}} onClick={()=>completeIv(editModal.id,"通过",85)}>✓ 通过（85分）</button>
+                <button className="btn btn-success" style={{flex:1}} onClick={()=>completeIv(editModal.id,"通过",92)}>✓ 通过（92分）</button>
+                <button className="btn btn-danger" style={{flex:1}} onClick={()=>completeIv(editModal.id,"未通过",0)}>✗ 未通过</button>
+              </div>
+            </div>
+          )}
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   PIPELINE PAGE
+═══════════════════════════════════════════════════ */
+function PipelinePage({candidates}){
+  const stages=["初筛","已筛选","待面试","面试中","已Offer","已入职"];
+  const stageCandidates=stages.map(s=>({stage:s,items:candidates.filter(c=>c.status===s)}));
+
+  return(
+    <div>
+      <SectionHead title="招聘漏斗" sub="可视化招聘全流程，实时追踪候选人进度"/>
+      {/* Funnel bars */}
+      <div className="card" style={{padding:18,marginBottom:18}}>
+        <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>整体转化漏斗</div>
+        {stages.map((s,i)=>{
+          const cnt=candidates.filter(c=>c.status===s).length;
+          const pct=candidates.length>0?Math.round(cnt/candidates.length*100):0;
+          const colors=["#94a3b8","#60a5fa","#f59e0b","#a78bfa","#10b981","#06b6d4"];
+          return(
+            <div key={s} style={{display:"flex",alignItems:"center",gap:14,marginBottom:12}}>
+              <div style={{width:64,fontSize:12,color:"#9ca3af",textAlign:"right",flexShrink:0}}>{s}</div>
+              <div style={{flex:1,height:28,borderRadius:6,background:"rgba(255,255,255,0.04)",overflow:"hidden",position:"relative"}}>
+                <div style={{width:`${Math.max(pct,2)}%`,height:"100%",background:colors[i],borderRadius:6,transition:"width .6s ease",display:"flex",alignItems:"center",paddingLeft:10}}>
+                  {cnt>0&&<span style={{fontSize:11,color:"#fff",fontWeight:600,whiteSpace:"nowrap"}}>{cnt}人</span>}
+                </div>
+              </div>
+              <div style={{width:36,fontSize:12,color:"#6b7280",textAlign:"right",flexShrink:0}}>{pct}%</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Kanban */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:12,overflowX:"auto"}}>
+        {stageCandidates.map(({stage,items})=>(
+          <div key={stage}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+              <span style={{fontSize:11,fontWeight:600,color:STATUS_CFG[stage]?.color||"#9ca3af"}}>{stage}</span>
+              <span className="badge" style={{background:STATUS_CFG[stage]?.bg,color:STATUS_CFG[stage]?.color,fontSize:10}}>{items.length}</span>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:8,minHeight:200}}>
+              {items.map(c=>(
+                <div key={c.id} className="card" style={{padding:10}}>
+                  <div style={{display:"flex",gap:7,alignItems:"center",marginBottom:6}}>
+                    <Avatar name={c.name} size={24}/>
+                    <div>
+                      <div style={{fontSize:12,fontWeight:600,color:"#f1f5f9"}}>{c.name}</div>
+                      <div style={{fontSize:10,color:"#6b7280",overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap",maxWidth:80}}>{c.position}</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <span style={{fontSize:10,color:"#6b7280"}}>{c.education}</span>
+                    <span style={{fontSize:11,fontWeight:700,color:c.score>=90?"#10b981":c.score>=75?"#f59e0b":"#9ca3af"}}>{c.score}</span>
+                  </div>
+                </div>
+              ))}
+              {items.length===0&&<div style={{fontSize:11,color:"#374151",textAlign:"center",padding:"20px 0"}}>暂无</div>}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   STATS PAGE
+═══════════════════════════════════════════════════ */
+function StatsPage({candidates}){
+  const total=candidates.length;
+  const byStatus=Object.entries(STATUS_CFG).map(([k,v])=>({label:k,...v,count:candidates.filter(c=>c.status===k).length}));
+  const byEdu=[["本科","#6366f1"],["硕士","#8b5cf6"],["博士","#ec4899"]].map(([e,c])=>({label:e,color:c,count:candidates.filter(x=>x.education===e).length}));
+  const byCity=[...new Set(candidates.map(c=>c.city))].map(city=>({city,count:candidates.filter(c=>c.city===city).length})).sort((a,b)=>b.count-a.count);
+  const maxStatus=Math.max(...byStatus.map(s=>s.count),1);
+  const scoreDistrib=[{range:"90-100",count:candidates.filter(c=>c.score>=90).length,color:"#10b981"},{range:"80-89",count:candidates.filter(c=>c.score>=80&&c.score<90).length,color:"#f59e0b"},{range:"70-79",count:candidates.filter(c=>c.score>=70&&c.score<80).length,color:"#60a5fa"},{range:"<70",count:candidates.filter(c=>c.score<70).length,color:"#6b7280"}];
+
+  return(
+    <div>
+      <SectionHead title="数据统计" sub="全面招聘数据分析，驱动精准决策"/>
+      <div className="grid4" style={{marginBottom:18}}>
+        {[["候选人总数",total,"#6366f1"],["平均AI评分",Math.round(candidates.reduce((a,c)=>a+c.score,0)/total),"#10b981"],["录用率",(candidates.filter(c=>c.status==="已Offer").length/total*100).toFixed(1)+"%","#f59e0b"],["开放职位",JOBS_DATA.filter(j=>j.status==="招聘中").length,"#8b5cf6"]].map(([l,v,c],i)=>(
+          <div key={i} className="card" style={{padding:18,textAlign:"center"}}>
+            <div style={{fontSize:28,fontWeight:700,color:c,marginBottom:4}}>{v}</div>
+            <div style={{fontSize:11,color:"#6b7280"}}>{l}</div>
+          </div>
+        ))}
+      </div>
+      <div className="grid3" style={{marginBottom:18}}>
+        {/* Status */}
+        <div className="card" style={{padding:18}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>候选人状态分布</div>
+          {byStatus.filter(s=>s.count>0).map((s,i)=>(
+            <div key={i} style={{marginBottom:11}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}>
+                <span style={{color:s.color}}>{s.label}</span>
+                <span style={{color:"#e2e8f0",fontWeight:600}}>{s.count} <span style={{color:"#6b7280",fontWeight:400,fontSize:10}}>({(s.count/total*100).toFixed(0)}%)</span></span>
+              </div>
+              <ProgressBar value={s.count} max={maxStatus} color={s.color} height={6}/>
+            </div>
+          ))}
+        </div>
+        {/* Education */}
+        <div className="card" style={{padding:18}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>学历分布</div>
+          {byEdu.map((e,i)=>(
+            <div key={i} style={{marginBottom:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}>
+                <span style={{color:"#9ca3af"}}>{e.label}</span>
+                <span style={{color:"#e2e8f0"}}>{e.count}人 ({(e.count/total*100).toFixed(0)}%)</span>
+              </div>
+              <ProgressBar value={e.count} max={total} color={e.color} height={8}/>
+            </div>
+          ))}
+          <div style={{marginTop:16}}>
+            <div style={{fontSize:12,color:"#6b7280",marginBottom:8}}>性别分布</div>
+            <div style={{display:"flex",gap:10}}>
+              {[["男","#6366f1","👨"],["女","#ec4899","👩"]].map(([g,c,ic],i)=>{
+                const cnt=candidates.filter(x=>x.gender===g).length;
+                return <div key={i} style={{flex:1,background:"rgba(255,255,255,0.03)",borderRadius:9,padding:12,textAlign:"center"}}>
+                  <div style={{fontSize:20,marginBottom:3}}>{ic}</div>
+                  <div style={{fontSize:18,fontWeight:700,color:c}}>{cnt}</div>
+                  <div style={{fontSize:10,color:"#6b7280"}}>{g} ({(cnt/total*100).toFixed(0)}%)</div>
+                </div>;
+              })}
+            </div>
+          </div>
+        </div>
+        {/* Score Distribution */}
+        <div className="card" style={{padding:18}}>
+          <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>AI评分分布</div>
+          {scoreDistrib.map((s,i)=>(
+            <div key={i} style={{marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}>
+                <span style={{color:s.color}}>{s.range}分</span>
+                <span style={{color:"#e2e8f0"}}>{s.count}人</span>
+              </div>
+              <ProgressBar value={s.count} max={total} color={s.color} height={8}/>
+            </div>
+          ))}
+          <hr className="divider"/>
+          <div style={{fontSize:12,color:"#f1f5f9",fontWeight:600,marginBottom:8}}>城市分布 Top5</div>
+          {byCity.slice(0,5).map((c,i)=>(
+            <div key={i} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",fontSize:12,borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+              <span style={{color:"#9ca3af"}}>{c.city}</span>
+              <span style={{color:"#e2e8f0",fontWeight:600}}>{c.count}人</span>
+            </div>
+          ))}
+        </div>
+      </div>
+      {/* Top Candidates Table */}
+      <div className="card" style={{overflow:"hidden"}}>
+        <div style={{padding:"12px 18px",fontSize:13,fontWeight:600,color:"#f1f5f9",borderBottom:"1px solid rgba(255,255,255,0.05)"}}>🏆 Top 候选人榜</div>
+        {[...candidates].sort((a,b)=>b.score-a.score).slice(0,8).map((c,i)=>(
+          <div key={c.id} style={{display:"flex",alignItems:"center",gap:14,padding:"11px 18px",borderBottom:"1px solid rgba(255,255,255,0.03)"}}>
+            <div style={{width:26,height:26,borderRadius:"50%",background:i<3?["linear-gradient(135deg,#f59e0b,#d97706)","linear-gradient(135deg,#94a3b8,#64748b)","linear-gradient(135deg,#cd7f32,#a0522d)"][i]:"rgba(255,255,255,0.07)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:"#fff"}}>{i+1}</div>
+            <Avatar name={c.name} size={32}/>
+            <div style={{flex:1}}>
+              <div style={{fontSize:13,fontWeight:500,color:"#f1f5f9"}}>{c.name}</div>
+              <div style={{fontSize:11,color:"#6b7280"}}>{c.position} · {c.education} · {c.experience}年</div>
+            </div>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",maxWidth:200,justifyContent:"flex-end"}}>
+              {c.tags?.map((t,j)=><Tag key={j} label={t} color={["#6366f1","#10b981","#f59e0b"][j%3]}/>)}
+            </div>
+            <StatusBadge status={c.status}/>
+            <ScoreRing score={c.score} size={38}/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════
+   AI PAGE
+═══════════════════════════════════════════════════ */
+function AIPage({candidates,setCandidates,notify}){
+  const [chatHistory,setChatHistory]=useState([]);
+  const WELCOME=`您好！我是 HireNova AI 招聘助手 🤖\n\n✅ 已内置 Claude AI，直接使用，无需任何配置！\n\n我可以帮您：\n• 🔍 自然语言筛选候选人并批量更新状态\n• 📊 深度分析候选人能力和岗位匹配度\n• 📈 生成完整招聘数据报告\n• 💡 制定个性化招聘策略\n\n试试这些指令：\n「帮我筛选硕士以上、5年以上经验的工程师，标记为待面试」\n「分析赵磊的综合能力，适合算法工程师吗？」\n「把所有评分90分以上的候选人批量更新为已筛选」\n「分析一下当前整体招聘情况」`;
+  const [messages,setMessages]=useState([{role:"assistant",content:WELCOME}]);
+  const [input,setInput]=useState("");
+  const [loading,setLoading]=useState(false);
+  const endRef=useRef();
+  useEffect(()=>endRef.current?.scrollIntoView({behavior:"smooth"}),[messages]);
+
+  const executeAction=(action)=>{
+    if(action.type!=="filter_and_update")return 0;
+    const{filters={},newStatus}=action; let count=0;
+    setCandidates(prev=>prev.map(c=>{
+      const ok=
+        (!filters.education||filters.education==="null"||c.education===filters.education)&&
+        (!filters.gender||filters.gender==="null"||c.gender===filters.gender)&&
+        (filters.minExp==null||filters.minExp==="null"||c.experience>=Number(filters.minExp))&&
+        (filters.minScore==null||filters.minScore==="null"||c.score>=Number(filters.minScore))&&
+        (!filters.position||filters.position==="null"||c.position.includes(filters.position))&&
+        (!filters.skill||filters.skill==="null"||c.skills.some(s=>s.includes(filters.skill)))&&
+        (!filters.city||filters.city==="null"||c.city.includes(filters.city));
+      if(ok&&!["已Offer","已入职"].includes(c.status)){count++;return{...c,status:newStatus};}
+      return c;
+    }));
+    return count;
+  };
+
+  const send=async(override)=>{
+    const msg=(override||input).trim();
+    if(!msg||loading)return;
+    setInput("");
+    setMessages(p=>[...p,{role:"user",content:msg}]);
+    setLoading(true);
+
+    const ctx=candidates.map(c=>`[ID:${c.id}] ${c.name}|${c.gender}|${c.age}岁|${c.education}|${c.school}|${c.experience}年|${c.position}|技能:${c.skills.join("/")}|状态:${c.status}|评分:${c.score}|城市:${c.city}`).join("\n");
+    const sys=`你是 HireNova AI 招聘助手，专业友好，用中文回答。
+当前候选人（共${candidates.length}人）：
+${ctx}
+
+当用户要求筛选/标记/批量操作时，回复末尾附加（JSON不加注释）：
+\`\`\`action
+{"type":"filter_and_update","filters":{"education":"值或null","gender":"值或null","minExp":数字或null,"minScore":数字或null,"position":"值或null","skill":"值或null","city":"值或null"},"newStatus":"初筛|已筛选|待面试|已Offer|已拒绝"}
+\`\`\`
+仅查询分析时不附加。`;
+
+    try{
+      // Call our own Vercel backend proxy /api/chat
+      // The proxy reads ANTHROPIC_API_KEY from server env var - key never exposed in browser
+      const res=await fetch("/api/chat",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:1200,
+          system:sys,
+          messages:[...chatHistory,{role:"user",content:msg}],
+        }),
+      });
+      if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||`HTTP ${res.status}`);}
+      const data=await res.json();
+      const full=data.content?.find(b=>b.type==="text")?.text||"抱歉，暂时无法回应。";
+      const am=full.match(/```action\s*([\s\S]*?)```/);
+      let display=full.replace(/```action[\s\S]*?```/g,"").trim();
+      if(am){
+        try{
+          const action=JSON.parse(am[1].trim());
+          const cnt=executeAction(action);
+          display+=`\n\n✅ **操作已执行**：成功更新 **${cnt}** 位候选人状态为「${action.newStatus}」。`;
+          notify(`AI 已批量更新 ${cnt} 位候选人`);
+        }catch{display+="\n\n⚠️ 操作指令解析失败，请重试。";}
+      }
+      setMessages(p=>[...p,{role:"assistant",content:display}]);
+      setChatHistory(p=>[...p,{role:"user",content:msg},{role:"assistant",content:full}]);
+    }catch(e){
+      setMessages(p=>[...p,{role:"assistant",content:`❌ 请求失败：${e.message}`}]);
+    }
+    setLoading(false);
+  };
+
+  const QUICK=[
+    {ic:"🔍",lb:"筛选硕士工程师",q:"帮我筛选学历硕士以上、3年以上经验的工程师，标记为已筛选"},
+    {ic:"⭐",lb:"高分→待面试",q:"把所有AI评分90分以上的候选人标记为待面试"},
+    {ic:"📊",lb:"整体分析",q:"详细分析当前招聘整体情况，给出优化建议"},
+    {ic:"🎯",lb:"推荐Top5",q:"综合分析推荐最值得优先跟进的5位候选人"},
+    {ic:"💼",lb:"算法岗匹配",q:"哪些候选人最适合算法工程师职位？"},
+    {ic:"📈",lb:"完整报告",q:"生成本轮招聘的完整数据分析报告"},
+  ];
+
+  return(
+    <div style={{display:"grid",gridTemplateColumns:"1fr 260px",gap:18,height:"calc(100vh - 96px)"}}>
+      <div className="card" style={{display:"flex",flexDirection:"column",overflow:"hidden"}}>
+        <div style={{padding:"12px 18px",borderBottom:"1px solid rgba(255,255,255,0.05)",display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
+          <div style={{width:34,height:34,borderRadius:9,background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:17}}>🤖</div>
+          <div>
+            <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9"}}>AI 招聘助手</div>
+            <div style={{display:"flex",alignItems:"center",gap:5}}><Dot color="#10b981"/><span style={{fontSize:10,color:"#10b981"}}>Claude AI · 在线</span></div>
+          </div>
+          <div className="ai-badge" style={{marginLeft:"auto",fontSize:10}}>⚡ 内置 Claude · 无需配置</div>
+        </div>
+
+        <div style={{flex:1,overflowY:"auto",padding:16}}>
+          {messages.map((m,i)=>(
+            <div key={i} style={{marginBottom:14,display:"flex",justifyContent:m.role==="user"?"flex-end":"flex-start",gap:8}}>
+              {m.role==="assistant"&&<div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,flexShrink:0}}>🤖</div>}
+              <div style={{maxWidth:"80%",padding:"10px 14px",borderRadius:m.role==="user"?"14px 3px 14px 14px":"3px 14px 14px 14px",background:m.role==="user"?"linear-gradient(135deg,#4f46e5,#7c3aed)":"rgba(255,255,255,0.04)",border:m.role==="user"?"none":"1px solid rgba(255,255,255,0.07)",fontSize:13,color:"#e2e8f0",lineHeight:1.8,whiteSpace:"pre-wrap"}}>
+                {m.content.split(/(\*\*[^*]+\*\*)/g).map((p,j)=>p.startsWith("**")&&p.endsWith("**")?<strong key={j} style={{color:"#a5b4fc"}}>{p.slice(2,-2)}</strong>:p)}
+              </div>
+              {m.role==="user"&&<Avatar name="我" size={28} style={{flexShrink:0}}/>}
+            </div>
+          ))}
+          {loading&&(
+            <div style={{display:"flex",gap:8,marginBottom:14}}>
+              <div style={{width:28,height:28,borderRadius:"50%",background:"linear-gradient(135deg,#6366f1,#8b5cf6)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13}}>🤖</div>
+              <div style={{padding:"11px 14px",borderRadius:"3px 14px 14px 14px",background:"rgba(255,255,255,0.04)",border:"1px solid rgba(255,255,255,0.07)"}}>
+                <div style={{display:"flex",gap:4}}>{[0,1,2].map(j=><div key={j} style={{width:7,height:7,borderRadius:"50%",background:"#818cf8",animation:"dotBounce 1.2s ease-in-out infinite",animationDelay:`${j*0.18}s`}}></div>)}</div>
+              </div>
+            </div>
+          )}
+          <div ref={endRef}/>
+        </div>
+
+        <div style={{padding:12,borderTop:"1px solid rgba(255,255,255,0.05)",flexShrink:0}}>
+          <div style={{display:"flex",gap:8}}>
+            <input className="inp" value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==="Enter"&&!e.shiftKey&&send()} placeholder="用自然语言描述招聘需求，支持批量操作（Enter发送）..." style={{flex:1}}/>
+            <button className="btn btn-primary" style={{padding:"9px 18px",flexShrink:0}} onClick={()=>send()} disabled={loading||!input.trim()}>发送</button>
+          </div>
+        </div>
+      </div>
+
+      <div style={{display:"flex",flexDirection:"column",gap:14,overflow:"auto"}}>
+        <div className="card" style={{padding:14,background:"linear-gradient(135deg,rgba(16,185,129,0.08),rgba(6,182,212,0.04))"}}>
+          <div style={{fontSize:12,fontWeight:600,color:"#34d399",marginBottom:5}}>🟢 Claude AI 已就绪</div>
+          <div style={{fontSize:11,color:"#6b7280",lineHeight:1.65}}>AI 助手已内置，直接对话即可，支持自然语言筛选和批量操作。</div>
+        </div>
+        <div className="card" style={{padding:14}}>
+          <div style={{fontSize:12,fontWeight:600,color:"#f1f5f9",marginBottom:10}}>⚡ 快捷指令</div>
+          <div style={{display:"flex",flexDirection:"column",gap:5}}>
+            {QUICK.map((q,i)=>(
+              <button key={i} onClick={()=>send(q.q)} disabled={loading} style={{padding:"8px 10px",borderRadius:7,background:"rgba(99,102,241,0.07)",border:"1px solid rgba(99,102,241,0.13)",color:"#a5b4fc",fontSize:11,cursor:"pointer",textAlign:"left",display:"flex",alignItems:"center",gap:8,opacity:loading?.5:1}}>
+                <span style={{fontSize:15,flexShrink:0}}>{q.ic}</span>{q.lb}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="card" style={{padding:14}}>
+          <div style={{fontSize:11,fontWeight:600,color:"#f1f5f9",marginBottom:8}}>支持的操作</div>
+          {[["🔍","自然语言筛选候选人"],["⚡","批量更新候选人状态"],["📊","深度分析候选人"],["📈","生成招聘报告"],["💡","招聘策略建议"],["🔄","多轮对话记忆"]].map(([ic,tx],i)=>(
+            <div key={i} style={{display:"flex",gap:8,padding:"5px 0",fontSize:11,color:"#9ca3af",borderBottom:"1px solid rgba(255,255,255,0.03)"}}><span>{ic}</span><span>{tx}</span></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SettingsPage({notify}){
+  const [form,setForm]=useState({company:"HireNova 科技有限公司",email:"hr@hirenova.com",minScore:70,autoFilter:true,aiScore:true,emailNotify:false,darkMode:true});
+  const [workerUrl,setWorkerUrl]=useState(()=>localStorage.getItem("hn_worker_url")||"");
+  const [showUrl,setShowUrl]=useState(false);
+  const set=(k,v)=>setForm(p=>({...p,[k]:v}));
+
+  return(
+    <div>
+      <SectionHead title="系统设置" desc="配置系统参数、AI功能与通知"/>
+      <div className="grid2" style={{gap:16}}>
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div className="card" style={{padding:18}}>
+            <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>基本信息</div>
+            {[["公司名称","company","text"],["联系邮箱","email","email"]].map(([l,k,t])=>(
+              <div key={k} style={{marginBottom:12}}>
+                <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>{l}</div>
+                <input className="inp" type={t} value={form[k]} onChange={e=>set(k,e.target.value)} style={{fontSize:13}}/>
+              </div>
+            ))}
+            <div style={{marginBottom:12}}>
+              <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"#6b7280",marginBottom:4}}><span>最低AI筛选分数</span><span style={{color:"#a5b4fc"}}>{form.minScore}分</span></div>
+              <input type="range" min="0" max="100" value={form.minScore} onChange={e=>set("minScore",+e.target.value)}/>
+            </div>
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={()=>notify("设置已保存")}>保存设置</button>
+          </div>
+
+          <div className="card" style={{padding:18}}>
+            <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:14}}>AI 功能开关</div>
+            {[["autoFilter","自动筛选","新简历导入后自动触发AI筛选"],["aiScore","AI评分","候选人上传后自动生成综合评分"],["emailNotify","邮件通知","候选人状态变更时发送邮件提醒"]].map(([k,lb,desc])=>(
+              <div key={k} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                <div><div style={{fontSize:13,color:"#e2e8f0"}}>{lb}</div><div style={{fontSize:11,color:"#6b7280",marginTop:2}}>{desc}</div></div>
+                <div onClick={()=>set(k,!form[k])} style={{width:44,height:24,borderRadius:12,background:form[k]?"linear-gradient(135deg,#6366f1,#8b5cf6)":"rgba(255,255,255,0.09)",cursor:"pointer",position:"relative",transition:"all .25s",flexShrink:0}}>
+                  <div style={{position:"absolute",top:2,left:form[k]?22:2,width:20,height:20,borderRadius:"50%",background:"#fff",transition:"left .25s",boxShadow:"0 1px 4px rgba(0,0,0,0.3)"}}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div style={{display:"flex",flexDirection:"column",gap:14}}>
+          <div className="card" style={{padding:18,border:"1px solid rgba(99,102,241,0.2)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+              <div className="ai-badge">⚡ 真实 AI 接入配置</div>
+            </div>
+            <div style={{background:"rgba(99,102,241,0.07)",borderRadius:9,padding:14,marginBottom:14,fontSize:12,color:"#c7d2fe",lineHeight:1.9}}>
+              <strong style={{color:"#a5b4fc"}}>接入真实 Claude AI（可选）</strong><br/><br/>
+              <strong>步骤1：创建免费 Cloudflare Worker</strong><br/>
+              1. 访问 <a href="https://workers.cloudflare.com" target="_blank">workers.cloudflare.com</a> 注册<br/>
+              2. 创建 Worker，粘贴下方代码<br/>
+              3. Settings → Variables 添加 <code style={{background:"rgba(255,255,255,0.1)",padding:"1px 5px",borderRadius:3}}>ANTHROPIC_API_KEY</code><br/>
+              4. 复制 Worker 网址填入下方<br/><br/>
+              <strong>步骤2：获取 API Key</strong><br/>
+              访问 <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> 免费注册获取
+            </div>
+            <div style={{background:"#0d1117",borderRadius:8,padding:12,marginBottom:14,fontFamily:"monospace",fontSize:10,color:"#7dd3fc",lineHeight:1.7,overflowX:"auto"}}>
+{`export default {
+  async fetch(request, env) {
+    if (request.method === "OPTIONS")
+      return new Response(null, {headers:{
+        "Access-Control-Allow-Origin":"*",
+        "Access-Control-Allow-Methods":"POST,OPTIONS",
+        "Access-Control-Allow-Headers":"Content-Type"
+      }});
+    const body = await request.json();
+    const res = await fetch(
+      "https://api.anthropic.com/v1/messages",
+      { method:"POST",
+        headers:{"Content-Type":"application/json",
+          "x-api-key":env.ANTHROPIC_API_KEY,
+          "anthropic-version":"2023-06-01"},
+        body:JSON.stringify(body) }
+    );
+    return new Response(await res.text(), {
+      headers:{"Content-Type":"application/json",
+        "Access-Control-Allow-Origin":"*"}
+    });
+  }
+}`}
+            </div>
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:11,color:"#6b7280",marginBottom:4}}>Worker 代理地址</div>
+              <div style={{display:"flex",gap:8}}>
+                <input className="inp" type={showUrl?"text":"password"} value={workerUrl} onChange={e=>setWorkerUrl(e.target.value)} placeholder="https://your-worker.workers.dev" style={{flex:1,fontSize:12}}/>
+                <button className="btn btn-ghost" style={{fontSize:11}} onClick={()=>setShowUrl(p=>!p)}>{showUrl?"隐藏":"显示"}</button>
+              </div>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
+              <Dot color={workerUrl?"#10b981":"#6b7280"}/>
+              <span style={{fontSize:12,color:workerUrl?"#34d399":"#6b7280"}}>{workerUrl?"已配置 Worker，AI助手将使用真实Claude":"未配置，AI助手使用内置规则引擎"}</span>
+            </div>
+            <button className="btn btn-primary" style={{width:"100%"}} onClick={()=>{localStorage.setItem("hn_worker_url",workerUrl);notify(workerUrl?"✅ Worker地址已保存，AI助手已升级为真实Claude！":"配置已清除，使用内置AI引擎")}}>
+              保存 Worker 配置
+            </button>
+          </div>
+
+          <div className="card" style={{padding:18}}>
+            <div style={{fontSize:13,fontWeight:600,color:"#f1f5f9",marginBottom:12}}>系统信息</div>
+            {[["版本","HireNova v2.0.0"],["AI引擎","内置规则引擎 + Claude可选"],["数据存储","浏览器本地"],["最后更新","2026-03-23"]].map(([l,v],i)=>(
+              <div key={i} style={{display:"flex",justifyContent:"space-between",fontSize:12,padding:"7px 0",borderBottom:"1px solid rgba(255,255,255,0.04)"}}>
+                <span style={{color:"#6b7280"}}>{l}</span><span style={{color:"#e2e8f0"}}>{v}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Bootstrap */
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
